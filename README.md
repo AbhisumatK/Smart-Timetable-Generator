@@ -1,170 +1,198 @@
-Smart Timetable Generator - SIH25028
-!(https://www.google.com/search?q=https://placehold.co/800x400/512888/FFFFFF%3Ftext%3DSmart%2BTimetable%2BGenerator)
+Smart Timetable Generator (SIH25028)
+Constraint-aware timetable generator for educational institutes. Built for Smart India Hackathon problem SIH25028, this project automates creation of clash-free schedules while honoring faculty availability, room capacities, course requirements, and institutional policies.
 
-📖 Table of Contents
-Introduction
+Note: Replace the placeholders in this README with your project-specific details. If you share your tech stack and run commands, I can tailor this to your repo.
 
-Problem Statement
+Highlights
+Automatic, clash-free timetable generation
 
-✨ Features
+Hard and soft constraints with configurable weights
 
-🛠️ Tech Stack
+Faculty availability, preferences, and load limits
 
-🚀 Getting Started
+Room capacities, types (lecture/lab), and equipment
 
-Prerequisites
+Course sections, labs, combined lectures, and tutorials
 
-Installation
+Fairness: balanced distribution across days and times
 
-🔧 Usage
+Avoid undesired patterns (back-to-back, late slots, long gaps)
 
-👥 Team Members
+Export to CSV/Excel/JSON; print-friendly views
 
-📜 License
+API-ready and/or CLI workflow (depending on your implementation)
 
-📌 Introduction
-The Smart Timetable Generator is an intelligent and automated solution designed to simplify the complex and time-consuming process of creating academic timetables. Leveraging advanced algorithms, this tool efficiently allocates subjects, teachers, and classrooms, taking into account various constraints and preferences. Our goal is to provide educational institutions with an optimal, clash-free, and balanced schedule, saving valuable administrative hours and resources.
+Repeatable runs and deterministic seeds
 
-❗️ Problem Statement
-Manually creating timetables for educational institutions is a significant challenge. It involves balancing numerous constraints such as teacher availability, classroom capacity, subject requirements, lab sessions, and student preferences. This manual process is often prone to errors, results in scheduling conflicts, and leads to inefficient resource utilization. The lack of an automated system creates a logistical bottleneck at the beginning of every academic year, causing delays and frustration for both staff and students. Our project aims to solve this by providing a robust, web-based platform that automates the entire timetable generation process.
+Problem Context (SIH25028)
+Objective: Generate optimal timetables for departments/campuses that satisfy institutional constraints and preferences.
 
-✨ Features
-Automated Generation: Intelligently creates optimized timetables with a single click.
+Scope:
 
-Constraint Management: Easily define and manage constraints like teacher availability, classroom capacity, and subject prerequisites.
+Multiple courses, sections, faculty, and rooms
 
-Clash Detection: Automatically identifies and resolves scheduling conflicts.
+Constraints include availability, room type/capacity, lab groupings, and no-overlaps
 
-Resource Optimization: Ensures efficient allocation of teachers, classrooms, and labs.
+Optimization for fairness and preferences
 
-Customizable & Flexible: Easily adaptable to different institutional structures and requirements.
+Table of Contents
+Features
 
-User-Friendly Interface: An intuitive and easy-to-navigate dashboard for administrators.
+Data Model (Inputs/Outputs)
 
-Export & Share: Generate and export timetables in PDF or Excel formats.
+Constraints
 
-Real-time Editing: Manually adjust the generated timetable with a simple drag-and-drop interface.
+How It Works (Algorithms)
 
-🛠️ Tech Stack
-Frontend: React.js, Tailwind CSS
+Project Structure
 
-Backend: Node.js, Express.js
+Quick Start
 
-Database: MongoDB / PostgreSQL
+Configuration
 
-Algorithm: Genetic Algorithms / Constraint Satisfaction Solvers
+Usage
 
-Authentication: JWT (JSON Web Tokens)
+Testing
 
-Deployment: Docker, AWS / Heroku
+Performance Tips
 
-🚀 Getting Started
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+Roadmap
 
-Prerequisites
-You will need the following software installed on your system:
+Contributing
 
-Node.js (v14 or higher)
+License
 
-npm (v6 or higher) or yarn
+Acknowledgements
 
-Git
+Features
+Data ingestion from CSV/JSON
 
-MongoDB or PostgreSQL
+Validates inputs and flags inconsistencies
 
-Installation
-Clone the repository:
+Constraint engine with hard/soft separation
 
-git clone [https://github.com/your-username/SIH25028-Smart-Timetable.git](https://github.com/your-username/SIH25028-Smart-Timetable.git)
-cd SIH25028-Smart-Timetable
+Multi-objective scoring with weights
 
-Install backend dependencies:
+Pluggable solvers (e.g., CP-SAT/OR, ILP, GA) – choose per build
 
-cd server
-npm install
+Incremental fixes for minor edits
 
-Install frontend dependencies:
+Multi-department generation and conflict checks
 
-cd client
-npm install
+Export to files; optional REST API/UI if enabled in your build
 
-Set up environment variables:
+Data Model
+You can use CSV or JSON. Example CSVs:
 
-Create a .env file in the server directory.
+teachers.csv
 
-Add the necessary environment variables (e.g., DATABASE_URL, JWT_SECRET).
+teacher_id, name, max_load_per_week, dept
 
-DATABASE_URL=your_database_connection_string
-JWT_SECRET=your_jwt_secret_key
-PORT=5000
+courses.csv
 
-Start the development servers:
+course_id, name, credits, type (lecture/lab/tutorial), sections, group_size, preferred_teacher_id
 
-Backend: From the server directory, run:
+sections.csv
 
-npm start
+section_id, course_id, student_count, program, semester
 
-Frontend: From the client directory, run:
+rooms.csv
 
-npm start
+room_id, name, capacity, type (lecture/lab), equipment (comma-separated)
 
-The application should now be running on http://localhost:3000.
+timeslots.csv
 
-🔧 Usage
-Admin Login: Access the admin dashboard using your credentials.
+slot_id, day, start_time, end_time
 
-Input Data: Navigate to the 'Settings' or 'Data Input' section to add teachers, subjects, classrooms, and define constraints.
+availability.csv
 
-Generate Timetable: Click the "Generate Timetable" button to start the automated process.
+teacher_id, day, slot_id, available (1/0), preference (0-10)
 
-Review & Edit: Review the generated timetable. Make manual adjustments if necessary using the drag-and-drop feature.
+pairs.csv (optional, for linked lectures/tutorials/labs)
 
-Export: Once satisfied, export the final timetable as a PDF or Excel file.
+parent_course_id, child_course_id, policy (consecutive/same_day/different_day)
 
-👥 Team Members
-Name
+Output (example JSON structure):
 
-Role
+timetable_id
 
-GitHub Profile
+generated_at
 
-[Team Member 1]
+assignments: list of
 
-Team Lead/Backend
+course_id, section_id, teacher_id, room_id, slot_id, day, start_time, end_time
 
-Link to GitHub
+score:
 
-[Team Member 2]
+hard_violations: 0
 
-Frontend Developer
+soft_penalty: numeric
 
-Link to GitHub
+components: per-constraint penalty details
 
-[Team Member 3]
+Constraints
+Hard constraints (must never be violated):
 
-Backend Developer
+No teacher overlaps
 
-Link to GitHub
+No room overlaps
 
-[Team Member 4]
+Room capacity >= section size
 
-UI/UX Designer
+Room type matches session type (lab/lecture)
 
-Link to GitHub
+Respect teacher absolute unavailability
 
-[Team Member 5]
+Linked sessions policy if defined (e.g., lab must follow lecture in same week)
 
-Algorithm Dev
+One session per section per slot
 
-Link to GitHub
+Soft constraints (penalized, weighted):
 
-[Team Member 6]
+Teacher preferences for/against certain slots
 
-Tester/QA
+Avoid back-to-back sessions beyond threshold
 
-Link to GitHub
+Spread course meetings across days
 
-📜 License
-This project is licensed under the MIT License. See the LICENSE file for more details.
+Avoid very early/very late slots
 
-<p align="center">Made with ❤️ for Smart India Hackathon</p>
+Balance teaching load through the week
+
+Keep same course/section consistent in room or day where possible
+
+Minimize idle gaps for teachers and sections
+
+Respect “no class” institutional windows (e.g., lunch, events)
+
+Weights are configurable; see Configuration.
+
+How It Works
+Typical solver approaches supported by timetable problems:
+
+Constraint Programming (CP-SAT)
+
+Integer Linear Programming (ILP/MIP)
+
+Metaheuristics: Genetic Algorithms, Simulated Annealing, Tabu Search
+
+Hybrid: CP for feasibility + Metaheuristics for soft optimization
+
+High-level flow:
+
+Load and validate inputs
+
+Build variables: x[course, section, slot, room, teacher]
+
+Add hard constraints (feasibility)
+
+Add soft constraints to objective with weights
+
+Optimize for minimum penalty (respecting hard feasibility)
+
+Export assignments and score breakdown
+
+Determinism:
+
+Use a fixed seed to get repeatable results, if your solver supports it.
+
