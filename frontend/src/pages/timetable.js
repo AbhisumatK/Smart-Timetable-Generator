@@ -48,39 +48,41 @@ export default function TimetablePage() {
     <>
       <Navbar />
       <Stepper step={6} />
-      <div className="max-w-4xl mx-auto mt-10 bg-white rounded shadow p-6">
-        <h2 className="text-2xl mb-4">Generated Timetable Options</h2>
+      <div className="container max-w-4xl mx-auto mt-10 p-6">
+        <div className="card p-6">
+          <h2 className="text-2xl mb-4 text-white">Generated Timetable Options</h2>
 
-        {generationError && <p className="text-red-600 mb-4">{generationError}</p>}
-        {generating && <p className="mb-4">Generating optimized timetables...</p>}
+          {generationError && <p className="text-red-300 mb-4">{generationError}</p>}
+          {generating && <p className="mb-4 text-white/80">Generating optimized timetables...</p>}
 
-        {!generating && Array.isArray(timetableOptions) && timetableOptions.length > 1 && (
-          <div className="mb-6 space-y-4">
-            {timetableOptions.map((option, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setTimetable(option.timetable);
-                  setConflicts([]);
-                }}
-                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded w-full text-left"
-              >
-                <strong>{option.recommendation ? `Option ${idx + 1}` : `Option ${idx + 1}`}</strong>
-                <p className="italic text-sm text-gray-700 mt-1">{option.recommendation}</p>
-              </button>
-            ))}
+          {!generating && Array.isArray(timetableOptions) && timetableOptions.length > 1 && (
+            <div className="mb-6 space-y-4">
+              {timetableOptions.map((option, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setTimetable(option.timetable);
+                    setConflicts([]);
+                  }}
+                  className="card p-4 w-full text-left hover:bg-white/10 transition-colors"
+                >
+                  <strong className="text-white">{option.recommendation ? `Option ${idx + 1}` : `Option ${idx + 1}`}</strong>
+                  <p className="italic text-sm text-white/70 mt-1">{option.recommendation}</p>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {conflicts.length > 0 && <ConflictBanner conflicts={conflicts} />}
+          {timetable && timetable !== null && (
+            <TimetableTable timetable={timetable} timeSlots={timeSlots} />
+          )}
+
+          <div className="mt-6 text-center">
+            <a href="/classrooms" className="text-cyan-300 hover:text-cyan-200 underline">
+              Back
+            </a>
           </div>
-        )}
-
-        {conflicts.length > 0 && <ConflictBanner conflicts={conflicts} />}
-        {timetable && timetable !== null && (
-          <TimetableTable timetable={timetable} timeSlots={timeSlots} />
-        )}
-
-        <div className="mt-6 text-center">
-          <a href="/classrooms" className="text-blue-500 underline">
-            Back
-          </a>
         </div>
       </div>
     </>

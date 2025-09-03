@@ -12,24 +12,27 @@ export default function Navbar() {
   // Styling helper for active link
   function isActive(path) {
     return router.pathname === path
-      ? "text-yellow-300 underline"
-      : "hover:text-yellow-300";
+      ? "text-cyan-400 underline underline-offset-4 decoration-cyan-400"
+      : "text-slate-300 hover:text-cyan-300";
   }
 
   return (
-    <nav className="w-full bg-blue-600 text-white py-3 px-6">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
-        <div className="flex items-center space-x-6">
-          <span className="font-bold text-xl cursor-pointer" onClick={() => router.push("/")}>
+    <nav className="w-full sticky top-0 z-40 border-b border-slate-700/50 bg-slate-900/40 backdrop-blur-xl">
+      <div className="container flex h-14 items-center justify-between">
+        <div className="flex items-center gap-6">
+          <span className="font-bold text-lg sm:text-xl tracking-tight text-slate-100 hover:text-cyan-300 cursor-pointer" onClick={() => router.push("/")}>
             Smart Timetable Scheduler
           </span>
+          <Link href="/" className={`text-sm sm:text-base ${isActive("/")}`}>
+            Home
+          </Link>
           {session && (
             <>
-              <Link href="/drafts" className={`text-lg ${isActive("/drafts")}`}>
+              <Link href="/drafts" className={`text-sm sm:text-base ${isActive("/drafts")}`}>
                 Drafts
               </Link>
               {userRole === "approver" && (
-                <Link href="/approval" className={`text-lg ${isActive("/approval")}`}>
+                <Link href="/approval" className={`text-sm sm:text-base ${isActive("/approval")}`}>
                   Approvals
                 </Link>
               )}
@@ -37,13 +40,15 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-3">
           {session ? (
             <>
-              <span className="hidden sm:inline">Hello, {session.user.name || session.user.email}</span>
+              <span className="hidden sm:inline text-slate-400">
+                Hello, {session.user.name || session.user.email}
+              </span>
               <button
                 onClick={() => signOut()}
-                className="bg-yellow-400 hover:bg-yellow-300 text-blue-900 px-3 py-1 rounded font-semibold"
+                className="btn-secondary border border-slate-600/50"
               >
                 Logout
               </button>
@@ -51,7 +56,7 @@ export default function Navbar() {
           ) : (
             <button
               onClick={() => signIn()}
-              className="bg-yellow-400 hover:bg-yellow-300 text-blue-900 px-3 py-1 rounded font-semibold"
+              className="btn-primary border border-cyan-500/30"
             >
               Login
             </button>

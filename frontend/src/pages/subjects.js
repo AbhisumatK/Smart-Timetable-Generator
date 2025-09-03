@@ -3,6 +3,8 @@ import Stepper from "../components/Stepper";
 import Navbar from "../components/Navbar";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import Link from "next/link";
+import InputList from "../components/InputList";
 
 export default function SubjectsPage() {
   const { subjects, setSubjects, facultyAssignments, setFacultyAssignments } = useScheduler();
@@ -52,71 +54,105 @@ export default function SubjectsPage() {
     <>
       <Navbar />
       <Stepper step={2} />
-      <div className="max-w-xl mx-auto mt-8 p-6 bg-white rounded shadow">
-        <div className="mb-4 space-y-2">
-          <input
-            placeholder="Subject Name"
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
-          />
-          <input
-            placeholder="Weekly Classes (e.g., 4)"
-            value={weeklyInput}
-            onChange={(e) => setWeeklyInput(e.target.value)}
-            type="number"
-            min={1}
-            className="w-full border px-3 py-2 rounded"
-          />
-          <input
-            placeholder="Faculty (comma separated)"
-            value={facultyInput}
-            onChange={(e) => setFacultyInput(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
-          />
-          <button
-            onClick={addSubject}
-            className="bg-blue-500 text-white px-4 py-2 rounded mt-2 w-full"
-          >
-            Add Subject
-          </button>
-          {error && <p className="text-red-600 mt-1">{error}</p>}
-        </div>
-
-        {subjects.length > 0 && (
-          <ul className="space-y-2 max-h-64 overflow-auto">
-            {subjects.map((s, i) => (
-              <li key={i} className="flex justify-between items-center bg-gray-100 p-2 rounded">
+      <div className="page-container">
+        <div className="content-wrapper">
+          <div className="text-center mb-8">
+            <h2 className="section-header">Subjects Configuration</h2>
+            <p className="section-subtitle">
+              Add your subjects with weekly class requirements and faculty assignments
+            </p>
+          </div>
+          
+          <div className="card max-w-2xl mx-auto">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <strong>{s.name}</strong>, {s.weekly} classes<br />
-                  <small>Faculty: {(facultyAssignments[s.name] || []).join(", ") || "None"}</small>
+                  <label className="label">Subject Name</label>
+                  <input
+                    placeholder="e.g., Mathematics"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    className="input"
+                  />
                 </div>
-                <button
-                  onClick={() => removeSubject(i)}
-                  className="text-red-600 hover:text-red-800"
-                  aria-label={`Remove subject ${s.name}`}
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+                <div>
+                  <label className="label">Weekly Classes</label>
+                  <input
+                    placeholder="e.g., 4"
+                    value={weeklyInput}
+                    onChange={(e) => setWeeklyInput(e.target.value)}
+                    type="number"
+                    min={1}
+                    className="input"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="label">Faculty (comma separated)</label>
+                <input
+                  placeholder="e.g., Dr. Smith, Prof. Johnson"
+                  value={facultyInput}
+                  onChange={(e) => setFacultyInput(e.target.value)}
+                  className="input"
+                />
+              </div>
+              
+              <button
+                onClick={addSubject}
+                className="btn-primary w-full"
+              >
+                Add Subject
+              </button>
+              {error && <div className="text-red-400 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm">{error}</div>}
+            </div>
 
-        <div className="flex justify-between mt-6">
-          <button
-            className="bg-gray-300 px-4 py-2 rounded"
-            onClick={() => router.push("/timeslots")}
-          >
-            Back
-          </button>
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-            disabled={subjects.length === 0}
-            onClick={() => router.push("/fixedClasses")}
-          >
-            Next
-          </button>
+            {subjects.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-slate-700/50">
+                <h3 className="text-lg font-semibold text-slate-200 mb-4">Added Subjects</h3>
+                <div className="space-y-3 max-h-64 overflow-auto">
+                  {subjects.map((s, i) => (
+                    <div key={i} className="card-compact flex justify-between items-center">
+                      <div className="text-slate-200">
+                        <div className="font-semibold">{s.name}</div>
+                        <div className="text-sm text-slate-400">
+                          {s.weekly} classes per week
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1">
+                          Faculty: {(facultyAssignments[s.name] || []).join(", ") || "None assigned"}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeSubject(i)}
+                        className="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-colors"
+                        aria-label={`Remove subject ${s.name}`}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-between mt-8 pt-6 border-t border-slate-700/50">
+              <button
+                className="btn-secondary"
+                onClick={() => router.push("/timeslots")}
+              >
+                Back
+              </button>
+              <button
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={subjects.length === 0}
+                onClick={() => router.push("/labs")}
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </>
