@@ -7,6 +7,7 @@ import { useEffect } from "react";
 
 export default function TimetablePage() {
   const {
+    classrooms,
     timeSlots,
     subjects,
     labs,
@@ -19,88 +20,67 @@ export default function TimetablePage() {
     generating,
     generationError,
     generateTimetables,
+    facultyAssignments,
+    fixedClasses,
   } = useScheduler();
 
-  // Generate timetable options on mount or when inputs change
+  // Trigger generation on timeSlots or subjects change
   useEffect(() => {
     if (timeSlots.length && subjects.length) {
-      generateTimetables();
-    }
-  }, [timeSlots, subjects, labs]);
-
-  // When timetableOptions update, set first option as displayed timetable
-  useEffect(() => {
-    if (timetableOptions.length > 0) {
-      // assume timetableOptions is array of { option, schedule }
-      const firstSchedule = timetableOptions[0]?.schedule || {};
-      // Convert schedule array to day->timeSlot->subject map to match TimetableTable format
-      const convertedTimetable = {};
-
-      // Initialize days and slots
-      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach(day => {
-        convertedTimetable[day] = {};
-        timeSlots.forEach(slot => {
-          convertedTimetable[day][slot] = "--";
-        });
+      generateTimetables({
+        classrooms: Object.keys(classrooms),
+        timeSlots,
+        subjects: subjects.map((s) => ({ name: s.name, weekly: s.weekly })),
+        facultyAvailability: facultyAssignments,
+        fixedClasses,
       });
-
-      // Fill timetable from schedule
-      timetableOptions[0].schedule.forEach(({ day, time, subject }) => {
-        if (convertedTimetable[day]) {
-          convertedTimetable[day][time] = subject;
-        }
-      });
-
-      setTimetable(convertedTimetable);
-      setConflicts([]); // or derive conflicts if needed
     }
-  }, [timetableOptions]);
+  }, [timeSlots, subjects]);
+
+  // useEffect(() => {
+  //   if (Array.isArray(timetableOptions) && timetableOptions.length > 0) {
+  //     setTimetable(timetableOptions[0].timetable);
+  //     setConflicts([]);
+  //   }
+  // }, [timetableOptions]);
 
   return (
     <>
       <Navbar />
-      <Stepper step={5} />
+      <Stepper step={6} />
       <div className="max-w-4xl mx-auto mt-10 bg-white rounded shadow p-6">
         <h2 className="text-2xl mb-4">Generated Timetable Options</h2>
 
         {generationError && <p className="text-red-600 mb-4">{generationError}</p>}
         {generating && <p className="mb-4">Generating optimized timetables...</p>}
 
-        {!generating && timetableOptions.length > 1 && (
+        {!generating && Array.isArray(timetableOptions) && timetableOptions.length > 1 && (
           <div className="mb-6 space-y-4">
             {timetableOptions.map((option, idx) => (
               <button
                 key={idx}
                 onClick={() => {
-                  // Convert selected option to timetable format
-                  const converted = {};
-                  ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach(day => {
-                    converted[day] = {};
-                    timeSlots.forEach(slot => {
-                      converted[day][slot] = "--";
-                    });
-                  });
-
-                  option.schedule.forEach(({ day, time, subject }) => {
-                    if (converted[day]) converted[day][time] = subject;
-                  });
-
-                  setTimetable(converted);
+                  setTimetable(option.timetable);
                   setConflicts([]);
                 }}
-                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded w-full text-left"
               >
-                {option.option || `Option ${idx + 1}`}
+                <strong>{option.recommendation ? `Option ${idx + 1}` : `Option ${idx + 1}`}</strong>
+                <p className="italic text-sm text-gray-700 mt-1">{option.recommendation}</p>
               </button>
             ))}
           </div>
         )}
 
         {conflicts.length > 0 && <ConflictBanner conflicts={conflicts} />}
-        {timetable && <TimetableTable timetable={timetable} timeSlots={timeSlots} />}
+        {timetable && timetable !== null && (
+          <TimetableTable timetable={timetable} timeSlots={timeSlots} />
+        )}
 
         <div className="mt-6 text-center">
-          <a href="/classrooms" className="text-blue-500 underline">Back</a>
+          <a href="/classrooms" className="text-blue-500 underline">
+            Back
+          </a>
         </div>
       </div>
     </>

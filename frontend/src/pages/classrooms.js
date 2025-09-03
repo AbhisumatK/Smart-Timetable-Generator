@@ -24,7 +24,7 @@ export default function ClassroomsPage() {
   return (
     <>
       <Navbar />
-      <Stepper step={4} />
+      <Stepper step={5} />
       <div className="max-w-xl mx-auto mt-8 p-6 bg-white rounded shadow">
         <InputList
           label="Enter Classroom Names"

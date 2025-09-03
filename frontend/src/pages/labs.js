@@ -29,7 +29,7 @@ export default function LabsPage() {
   return (
     <>
       <Navbar />
-      <Stepper step={3} />
+      <Stepper step={4} />
       <div className="max-w-xl mx-auto mt-8 p-6 bg-white rounded shadow">
         <InputList
           label="Enter Lab Classes"
@@ -42,7 +42,7 @@ export default function LabsPage() {
         />
         {error && <div className="text-red-600 mt-2">{error}</div>}
         <div className="flex justify-between mt-6">
-          <button className="bg-gray-300 px-4 py-2 rounded" onClick={() => router.push("/subjects")}>Back</button>
+          <button className="bg-gray-300 px-4 py-2 rounded" onClick={() => router.push("/fixedClasses")}>Back</button>
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded"
             onClick={() => router.push("/classrooms")}>

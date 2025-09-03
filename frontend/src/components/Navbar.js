@@ -23,9 +23,6 @@ export default function Navbar() {
           <span className="font-bold text-xl cursor-pointer" onClick={() => router.push("/")}>
             Smart Timetable Scheduler
           </span>
-          <Link href="/" className={`text-lg ${isActive("/")}`}>
-            Home
-          </Link>
           {session && (
             <>
               <Link href="/drafts" className={`text-lg ${isActive("/drafts")}`}>

@@ -113,7 +113,7 @@ export default function SubjectsPage() {
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded"
             disabled={subjects.length === 0}
-            onClick={() => router.push("/labs")}
+            onClick={() => router.push("/fixedClasses")}
           >
             Next
           </button>
