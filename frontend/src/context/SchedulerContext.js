@@ -15,6 +15,7 @@ export function SchedulerProvider({ children }) {
   const [generationError, setGenerationError] = useState(null);
   const [draftTimetables, setDraftTimetables] = useState([]);
   const [currentUser, setCurrentUser] = useState();
+  const [facultyAssignments, setFacultyAssignments] = useState({});
 
   useEffect(() => {
         getSession().then(session => {
