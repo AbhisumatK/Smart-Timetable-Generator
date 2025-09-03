@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Timetable Scheduler</title>
+
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#eef2ff',
+                100: '#e0e7ff',
+                200: '#c7d2fe',
+                300: '#a5b4fc',
+                400: '#818cf8',
+                500: '#6366f1',
+                600: '#4f46e5',
+                700: '#4338ca',
+                800: '#3730a3',
+                900: '#312e81'
+              },
+              accent: {
+                50: '#ecfeff',
+                100: '#cffafe',
+                200: '#a5f3fc',
+                300: '#67e8f9',
+                400: '#22d3ee',
+                500: '#06b6d4',
+                600: '#0891b2',
+                700: '#0e7490',
+                800: '#155e75',
+                900: '#164e63'
+              }
+            },
+            boxShadow: {
+              soft: '0 10px 30px -10px rgba(2, 6, 23, 0.25)'
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- React 18 + ReactDOM + Babel for JSX in single file -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      html, body { height: 100%; }
+      body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+      /* Futuristic fallback styles (apply even if Tailwind CDN fails) */
+      :root {
+        --bg:#0b1220;            /* deep space */
+        --panel:#0f172a;         /* slate-900 */
+        --muted:#1f2937;         /* slate-800 */
+        --text:#e5e7eb;          /* slate-200 */
+        --brand:#6366f1;         /* indigo-500 */
+        --brand-2:#06b6d4;       /* cyan-500 */
+        --accent:#22d3ee;        /* cyan-400 */
+        --glow:0 12px 30px -12px rgba(34,211,238,.35);
+      }
+      body { background: var(--bg); color: var(--text); }
+      header .title { background: linear-gradient(90deg, #a5b4fc, var(--brand), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      main { padding-bottom: 4rem; }
+      /* Cards */
+      section { border: 1px solid var(--muted); background: rgba(15,23,42,.8); border-radius: 16px; box-shadow: var(--glow); overflow: hidden; }
+      section > .hdr { display:flex; align-items:center; justify-content:space-between; padding: 14px 20px; border-bottom:1px solid var(--muted); }
+      section > .bd { padding: 18px 20px; }
+      /* Inputs */
+      input, select { background:#050a18; color:var(--text); border:1px solid var(--muted); border-radius:10px; padding:10px 12px; outline:none; }
+      input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(99,102,241,.25); }
+      /* Buttons */
+      .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer; border:1px solid transparent; transition: all .2s ease; }
+      .btn-primary { color:white; background: linear-gradient(90deg, var(--brand), var(--brand-2)); box-shadow: var(--glow); }
+      .btn-primary:hover { filter: brightness(1.06); transform: translateY(-1px); }
+      .btn-secondary { color:var(--text); background: rgba(2,6,23,.5); border-color: var(--muted); }
+      .btn-secondary:hover { background: rgba(2,6,23,.7); }
+      .btn-danger { color:#fee2e2; background: rgba(190,18,60,.25); border-color: rgba(190,18,60,.45); }
+      .btn-danger:hover { background: rgba(190,18,60,.35); }
+      /* Pills & rows */
+      .row { display:flex; align-items:center; justify-content:space-between; border:1px solid var(--muted); background: rgba(4,7,17,.65); border-radius:12px; padding:8px 10px; }
+      .pill { display:inline-flex; align-items:center; gap:.5rem; padding:6px 10px; border-radius:9999px; border:1px solid var(--muted); background: rgba(30,41,59,.6); font-size:12px; }
+      /* Table */
+      table { width:100%; border-collapse:separate; border-spacing:0; }
+      thead th { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; padding:10px; border-bottom:1px solid var(--muted); }
+      tbody td { padding:10px; border-bottom:1px solid var(--muted); }
+      .lab { background: rgba(16,185,129,.15); color:#a7f3d0; }
+    </style>
+</head>
+<body class="min-h-full bg-slate-950 text-slate-100" style="background-color:#0b1220;color:#e5e7eb;">
+  <div class="relative overflow-hidden">
+    
+
+    <header class="relative">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
+              <span class="title">Smart Timetable Scheduler</span>
+            </h1>
+            <p class="mt-2 text-slate-300">Plan time slots, subjects, and labs. Generate a conflict-aware weekly timetable.</p>
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+    <main id="root" class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-20"></main>
+  </div>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+
+    function SectionCard({ title, subtitle, children, action }) {
+      return (
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur shadow-soft">
+          <div className="hdr">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-100">{title}</h2>
+              {subtitle && <p className="text-sm text-slate-400">{subtitle}</p>}
+            </div>
+            {action}
+          </div>
+          <div className="bd">{children}</div>
+        </section>
+      );
+    }
+
+    function Pill({ children }) {
+      return (
+        <span className="pill inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-800/60 px-3 py-1 text-xs text-slate-200">
+          {children}
+        </span>
+      )
+    }
+
+    function ListRow({ children, onRemove }) {
+      return (
+        <div className="row flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/50 px-3 py-2">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-200">{children}</div>
+          <button onClick={onRemove} className="btn btn-danger ml-3 text-xs">Remove</button>
+        </div>
+      );
+    }
+
+    function useTimetableState() {
+      const [timeSlots, setTimeSlots] = useState([]); // array of "HH:MM-HH:MM"
+      const [subjects, setSubjects] = useState([]);   // [{ name, weekly, allocated }]
+      const [labs, setLabs] = useState([]);           // [{ name, duration, preferredSlot, allocated }]
+      const [classrooms, setClassrooms] = useState([]);// [string]
+      const [timetable, setTimetable] = useState({});
+      const [conflicts, setConflicts] = useState([]);
+
+      const resetAllocations = () => {
+        setSubjects(prev => prev.map(s => ({ ...s, allocated: 0 })));
+        setLabs(prev => prev.map(l => ({ ...l, allocated: false })));
+      };
+
+      const initializeTimetable = (slots) => {
+        const t = {};
+        for (const day of DAYS) {
+          t[day] = {};
+          for (const slot of slots) t[day][slot] = null;
+        }
+        return t;
+      };
+
+      function countOnDay(t, day, subject) {
+        return Object.values(t[day]).filter(v => v === subject).length;
+      }
+
+      function findConsecutiveFreeSlots(t, day, duration, slots) {
+        for (let i = 0; i <= slots.length - duration; i++) {
+          const block = Array.from({ length: duration }, (_, j) => slots[i + j]);
+          if (block.every(s => t[day][s] == null)) return block;
+        }
+        return null;
+      }
+
+      function schedule(slots, subjectsState, labsState) {
+        let t = initializeTimetable(slots);
+        const conf = [];
+
+        // Copy to avoid mutating React state directly
+        const subjectsCopy = subjectsState.map(s => ({ ...s, allocated: 0 }));
+        const labsCopy = labsState.map(l => ({ ...l, allocated: false }));
+
+        // --- Schedule Labs ---
+        for (const lab of labsCopy) {
+          const { name, duration, preferredSlots } = lab; // preferredSlots: array of slot names (optional)
+          let scheduled = false;
+
+          // If specific preferred slots provided, honor exactly that block
+          if (Array.isArray(preferredSlots) && preferredSlots.length === duration) {
+            const shuffledDays = [...DAYS].sort(() => Math.random() - 0.5);
+            for (const day of shuffledDays) {
+              if (preferredSlots.every(s => t[day][s] == null)) {
+                preferredSlots.forEach(s => t[day][s] = `${name} (Lab)`);
+                lab.allocated = true;
+                scheduled = true;
+                break;
+              }
+            }
+          }
+
+          if (!scheduled) {
+            const shuffledDays = [...DAYS].sort(() => Math.random() - 0.5);
+            for (const day of shuffledDays) {
+              const block = findConsecutiveFreeSlots(t, day, duration, slots);
+              if (block) {
+                block.forEach(s => t[day][s] = `${name} Lab`);
+                lab.allocated = true;
+                scheduled = true;
+                break;
+              }
+            }
+          }
+
+          if (!scheduled) conf.push(`Could not schedule lab: ${lab.name}`);
+        }
+
+        // --- Schedule Theory ---
+        const orderedSubjects = [...subjectsCopy].sort((a,b) => b.weekly - a.weekly);
+        for (const subj of orderedSubjects) {
+          const target = subj.weekly;
+          let safety = 0;
+          while (subj.allocated < target) {
+            safety += 1;
+            if (safety > 500) break;
+
+            const need = target - subj.allocated;
+            let placed = false;
+
+            if (need >= 2) {
+              const daysRnd = [...DAYS].sort(() => Math.random() - 0.5);
+              for (const day of daysRnd) {
+                if (countOnDay(t, day, subj.name) > 0) continue; // adding pair would exceed 2
+                const block = findConsecutiveFreeSlots(t, day, 2, slots);
+                if (block) {
+                  t[day][block[0]] = subj.name;
+                  t[day][block[1]] = subj.name;
+                  subj.allocated += 2;
+                  placed = true;
+                  break;
+                }
+              }
+            }
+
+            if (!placed) {
+              const daysRnd = [...DAYS].sort(() => Math.random() - 0.5);
+              for (const day of daysRnd) {
+                if (countOnDay(t, day, subj.name) >= 2) continue;
+                for (const slot of slots) {
+                  if (t[day][slot] == null) {
+                    t[day][slot] = subj.name;
+                    subj.allocated += 1;
+                    placed = true;
+                    break;
+                  }
+                }
+                if (placed) break;
+              }
+            }
+
+            if (!placed) break; // give up this round
+          }
+
+          if (subj.allocated < target) {
+            conf.push(`${subj.name}: ${subj.allocated}/${target} classes scheduled`);
+          }
+        }
+
+        return { t, conf, subjectsCopy, labsCopy };
+      }
+
+      const api = {
+        timeSlots, setTimeSlots,
+        subjects, setSubjects,
+        labs, setLabs,
+        classrooms, setClassrooms,
+        timetable, setTimetable,
+        conflicts, setConflicts,
+        resetAllocations,
+        runSchedule: () => {
+          if (timeSlots.length === 0) {
+            alert('Please add at least one time slot.');
+            return;
+          }
+          if (subjects.length === 0) {
+            alert('Please add at least one subject.');
+            return;
+          }
+          const { t, conf } = schedule(timeSlots, subjects, labs);
+          setTimetable(t);
+          setConflicts(conf);
+        },
+        clearAll: () => {
+          setTimeSlots([]);
+          setSubjects([]);
+          setLabs([]);
+          setClassrooms([]);
+          setTimetable({});
+          setConflicts([]);
+        }
+      };
+
+      return api;
+    }
+
+    function FormTimeSlots({ state }) {
+      const [slot, setSlot] = useState("");
+      const add = () => {
+        const s = slot.trim();
+        if (!s) return;
+        if (!/^\d{2}:\d{2}-\d{2}:\d{2}$/.test(s)) {
+          alert('Use format HH:MM-HH:MM');
+          return;
+        }
+        state.setTimeSlots(prev => [...prev, s]);
+        setSlot("");
+      };
+      const onKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
+      const remove = (idx) => state.setTimeSlots(prev => prev.filter((_, i) => i !== idx));
+
+      return (
+        <SectionCard title="Time Slots" subtitle="Enter ordered daily periods">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input value={slot} onChange={e=>setSlot(e.target.value)} onKeyDown={onKey} placeholder="09:00-10:00" className="w-full input" />
+              <button onClick={add} className="btn btn-primary">Add Slot</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {state.timeSlots.map((s, i) => (
+                <ListRow key={i} onRemove={() => remove(i)}>
+                  <Pill>
+                    <span className="h-2 w-2 rounded-full bg-accent-400"></span>
+                    {s}
+                  </Pill>
+                </ListRow>
+              ))}
+            </div>
+          </div>
+        </SectionCard>
+      );
+    }
+
+    function FormSubjects({ state }) {
+      const [name, setName] = useState("");
+      const [weekly, setWeekly] = useState("");
+      const add = () => {
+        const n = name.trim();
+        const w = parseInt(weekly, 10);
+        if (!n || !Number.isFinite(w) || w <= 0) return alert('Provide subject and weekly classes (>0)');
+        state.setSubjects(prev => [...prev, { name: n, weekly: w, allocated: 0 }]);
+        setName(""); setWeekly("");
+      };
+      const remove = (idx) => state.setSubjects(prev => prev.filter((_, i) => i !== idx));
+      const onKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
+
+      return (
+        <SectionCard title="Theory Subjects" subtitle="Name and weekly class count">
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input value={name} onChange={e=>setName(e.target.value)} onKeyDown={onKey} placeholder="Mathematics" className="input" />
+              <input value={weekly} onChange={e=>setWeekly(e.target.value)} onKeyDown={onKey} placeholder="4" inputMode="numeric" className="input" />
+              <button onClick={add} className="btn btn-primary">Add Subject</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {state.subjects.map((s, i) => (
+                <ListRow key={i} onRemove={() => remove(i)}>
+                  <Pill>
+                    <span className="h-2 w-2 rounded-full bg-brand-400"></span>
+                    {s.name}
+                  </Pill>
+                  <Pill>{s.weekly} / week</Pill>
+                </ListRow>
+              ))}
+            </div>
+          </div>
+        </SectionCard>
+      );
+    }
+
+    function FormLabs({ state }) {
+      const [name, setName] = useState("");
+      const [duration, setDuration] = useState("");
+      const [startTime, setStartTime] = useState("");
+      const [endTime, setEndTime] = useState("");
+      const add = () => {
+        const n = name.trim();
+        const d = parseInt(duration, 10);
+        if (!n || !Number.isFinite(d) || d < 1) return alert('Provide lab name and duration (>=1)');
+        if (d > state.timeSlots.length) return alert('Duration exceeds number of time slots');
+
+        // If start/end provided, compute exact covered slots
+        let preferredSlots = null;
+        if (startTime && endTime) {
+          // Find first slot whose start matches startTime
+          const parseStart = s => s.split('-')[0];
+          const parseEnd = s => s.split('-')[1];
+          const startIdx = state.timeSlots.findIndex(s => parseStart(s) === startTime.trim());
+          const endIdx = state.timeSlots.findIndex(s => parseEnd(s) === endTime.trim());
+          if (startIdx === -1) return alert('Start time must match the start of one of your time slots');
+          if (endIdx === -1) return alert('End time must match the end of one of your time slots');
+          if (endIdx < startIdx) return alert('End time must be after start time');
+          const range = state.timeSlots.slice(startIdx, endIdx + 1);
+          // Validate consecutiveness by ensuring boundaries align
+          const consecutive = range.every((slot, i, arr) => i === 0 || slot.split('-')[0] === arr[i-1].split('-')[1]);
+          if (!consecutive) return alert('Selected range is not consecutive');
+          if (range.length !== d) return alert(`Range covers ${range.length} slots; duration is ${d}`);
+          preferredSlots = range;
+        }
+
+        state.setLabs(prev => [...prev, { name: n, duration: d, preferredSlots, allocated: false }]);
+        setName(""); setDuration(""); setStartTime(""); setEndTime("");
+      };
+      const remove = (idx) => state.setLabs(prev => prev.filter((_, i) => i !== idx));
+
+      const onKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
+
+      return (
+        <SectionCard title="Lab Classes" subtitle="Duration in consecutive periods. Optional specific time range.">
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <input value={name} onChange={e=>setName(e.target.value)} onKeyDown={onKey} placeholder="OOPS Lab" className="input" />
+              <input value={duration} onChange={e=>setDuration(e.target.value)} onKeyDown={onKey} placeholder="2" inputMode="numeric" className="input" />
+              <input value={startTime} onChange={e=>setStartTime(e.target.value)} onKeyDown={onKey} placeholder="Start e.g. 09:30" className="input" />
+              <input value={endTime} onChange={e=>setEndTime(e.target.value)} onKeyDown={onKey} placeholder="End e.g. 11:30" className="input" />
+              <button onClick={add} className="btn btn-primary">Add Lab</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {state.labs.map((l, i) => (
+                <ListRow key={i} onRemove={() => remove(i)}>
+                  <Pill>
+                    <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
+                    {l.name}
+                  </Pill>
+                  <Pill>{l.duration} periods</Pill>
+                  {Array.isArray(l.preferredSlots) && l.preferredSlots.length>0 && <Pill>pref: {l.preferredSlots[0].split('-')[0]}–{l.preferredSlots[l.preferredSlots.length-1].split('-')[1]}</Pill>}
+                </ListRow>
+              ))}
+            </div>
+          </div>
+        </SectionCard>
+      );
+    }
+
+    function FormClassrooms({ state }) {
+      const [room, setRoom] = useState("");
+      const add = () => {
+        const r = room.trim();
+        if (!r) return;
+        state.setClassrooms(prev => [...prev, r]);
+        setRoom("");
+      };
+      const remove = (idx) => state.setClassrooms(prev => prev.filter((_, i) => i !== idx));
+      const onKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
+      return (
+        <SectionCard title="Classrooms" subtitle="Stored for reference">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input value={room} onChange={e=>setRoom(e.target.value)} onKeyDown={onKey} placeholder="Room 101" className="w-full input" />
+              <button onClick={add} className="btn btn-primary">Add Room</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {state.classrooms.map((r, i) => (
+                <ListRow key={i} onRemove={() => remove(i)}>
+                  <Pill>
+                    <span className="h-2 w-2 rounded-full bg-slate-400"></span>
+                    {r}
+                  </Pill>
+                </ListRow>
+              ))}
+            </div>
+          </div>
+        </SectionCard>
+      );
+    }
+
+    function TimetableGrid({ state }) {
+      const hasData = Object.keys(state.timetable).length > 0;
+      const cols = state.timeSlots.length + 1;
+      return (
+        <SectionCard
+          title="Generated Timetable"
+          subtitle={hasData ? "" : "Generate to preview the week"}
+          action={
+            <div className="flex items-center gap-3">
+              <button onClick={state.runSchedule} className="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M8 5v14l11-7L8 5z"/></svg>
+                Generate
+              </button>
+              <button onClick={state.clearAll} className="btn btn-secondary">Reset</button>
+            </div>
+          }
+        >
+          <div className="overflow-auto">
+            <table className="min-w-full border-separate border-spacing-0">
+              <thead>
+                <tr>
+                  <th className="sticky left-0 z-10 bg-slate-900/80 backdrop-blur px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-slate-300 border-b border-slate-800">Day</th>
+                  {state.timeSlots.map((s, i) => (
+                    <th key={i} className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-slate-300 border-b border-slate-800">{s}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {DAYS.map(day => (
+                  <tr key={day}>
+                    <td className="sticky left-0 z-10 bg-slate-900/80 backdrop-blur px-3 py-2 text-sm font-medium text-slate-200 border-b border-slate-800">{day}</td>
+                    {state.timeSlots.map((s, i) => {
+                      const val = state.timetable[day]?.[s] ?? '--';
+                      const isLab = typeof val === 'string' && val.toLowerCase().includes('lab');
+                      return (
+                        <td key={i} className={`px-3 py-2 border-b border-slate-800 text-sm ${isLab ? 'bg-emerald-900/20 text-emerald-200' : 'text-slate-200'}`}>
+                          {val}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-4">
+            {state.conflicts.length > 0 ? (
+              <div className="rounded-lg border border-amber-700/40 bg-amber-900/20 px-4 py-3 text-amber-100">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex h-2 w-2 rounded-full bg-amber-400"></span>
+                  <div>
+                    <p className="font-semibold">Conflicts / Warnings</p>
+                    <ul className="mt-1 list-disc pl-5 text-sm">
+                      {state.conflicts.map((c, i) => <li key={i}>{c}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ) : hasData ? (
+              <div className="rounded-lg border border-emerald-800/40 bg-emerald-900/20 px-4 py-3 text-emerald-100">✅ Timetable generated successfully with no conflicts!</div>
+            ) : null}
+          </div>
+        </SectionCard>
+      );
+    }
+
+    function App() {
+      const state = useTimetableState();
+      return (
+        <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <FormTimeSlots state={state} />
+            <FormSubjects state={state} />
+            <FormLabs state={state} />
+            <FormClassrooms state={state} />
+          </div>
+          <TimetableGrid state={state} />
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
