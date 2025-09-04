@@ -21,7 +21,7 @@ export default function Home() {
         <div className="content-wrapper">
           <div className="text-center space-y-6">
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-bold text-slate-100 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
                 Smart Timetable Scheduler
               </h1>
               <p className="section-subtitle text-lg">
