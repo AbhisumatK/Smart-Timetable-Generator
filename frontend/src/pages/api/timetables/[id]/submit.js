@@ -1,13 +1,22 @@
-import drafts from "../index";
+import { readTimetables, writeTimetables } from "../../../../lib/timetableStore";
 
 export default function handler(req, res) {
-  if (req.method !== "PUT") return res.status(405).end("Method Not Allowed");
-
   const { id } = req.query;
-  const index = drafts.findIndex((d) => d.id === id);
-  if (index < 0) return res.status(404).json({ message: "Draft not found" });
 
-  drafts[index].status = "pending";
+  if (req.method !== "PUT") {
+    res.setHeader("Allow", ["PUT"]);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
 
-  res.status(200).json(drafts[index]);
+  const timetables = readTimetables();
+  const index = timetables.findIndex(t => t.id === id);
+
+  if (index === -1) return res.status(404).json({ error: "Timetable not found" });
+
+  timetables[index].status = "pending";
+  timetables[index].submittedAt = new Date().toISOString();
+
+  writeTimetables(timetables);
+
+  return res.status(200).json({ message: "Draft submitted for approval" });
 }

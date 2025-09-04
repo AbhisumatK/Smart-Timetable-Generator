@@ -1,19 +1,110 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0f;
+  --foreground: #e2e8f0;
+  --muted: #64748b;
+  --primary: #06b6d4; /* cool cyan */
+  --secondary: #8b5cf6; /* cool purple */
+  --accent: #0ea5e9; /* cool blue */
+  --warning: #f59e0b; /* amber */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-warning: var(--warning);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+/* Cool dark gradient background with more visual elements */
 body {
-  background: var(--background);
+  background: radial-gradient(1200px 800px at 20% -10%, rgb(6 182 212 / 0.08), transparent 60%),
+              radial-gradient(1000px 700px at 120% 20%, rgb(139 92 246 / 0.06), transparent 65%),
+              radial-gradient(800px 600px at 50% 120%, rgb(14 165 233 / 0.05), transparent 70%),
+              radial-gradient(600px 400px at 80% 80%, rgb(59 130 246 / 0.03), transparent 50%),
+              linear-gradient(180deg, #0a0a0f 0%, #0f172a 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* Subtle scanline and noise overlay for depth */
+body::before, body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* scanlines */
+body::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 0.01),
+    rgb(255 255 255 / 0.01) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* noise */
+body::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+  opacity: .8;
+}
+
+/* Utility enhancements that won't conflict with logic */
+.container {
+  @apply mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.card {
+  @apply rounded-xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-md shadow-lg shadow-slate-900/20 p-6;
+}
+
+.card-compact {
+  @apply rounded-lg border border-slate-700/50 bg-slate-800/40 backdrop-blur-md shadow-md shadow-slate-900/10 p-4;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-lg bg-cyan-600/90 hover:bg-cyan-500 text-slate-100 font-semibold px-6 py-3 transition-colors shadow-lg shadow-cyan-500/20;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-lg bg-purple-600/90 hover:bg-purple-500 text-slate-100 font-semibold px-6 py-3 transition-colors shadow-lg shadow-purple-500/20;
+}
+
+.input {
+  @apply w-full rounded-lg border border-slate-600/50 bg-slate-800/50 text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/60 focus:border-cyan-500/60 px-4 py-3 backdrop-blur transition-colors;
+}
+
+.label {
+  @apply block mb-3 text-sm font-semibold text-slate-300;
+}
+
+.badge {
+  @apply inline-flex items-center gap-2 rounded-full border border-slate-600/50 bg-slate-800/50 px-3 py-1 text-xs text-slate-300;
+}
+
+.section-header {
+  @apply text-2xl font-bold text-slate-100 mb-6 text-center;
+}
+
+.section-subtitle {
+  @apply text-slate-400 mb-8 text-center max-w-2xl mx-auto;
+}
+
+.page-container {
+  @apply min-h-screen py-8;
+}
+
+.content-wrapper {
+  @apply max-w-4xl mx-auto space-y-8;
 }

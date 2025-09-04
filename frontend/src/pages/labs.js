@@ -30,24 +30,32 @@ export default function LabsPage() {
     <>
       <Navbar />
       <Stepper step={4} />
-      <div className="max-w-xl mx-auto mt-8 p-6 bg-white rounded shadow">
-        <InputList
-          label="Enter Lab Classes"
-          value={labs}
-          setValue={setLabs}
-          placeholder="e.g., OOPS Lab,2,13:00-14:00"
-          onAdd={addLab}
-          onRemove={removeLab}
-          children={(l) => `${l.name}, ${l.duration}${l.preferred ? `, ${l.preferred}` : ""}`}
-        />
-        {error && <div className="text-red-600 mt-2">{error}</div>}
-        <div className="flex justify-between mt-6">
-          <button className="bg-gray-300 px-4 py-2 rounded" onClick={() => router.push("/fixedClasses")}>Back</button>
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-            onClick={() => router.push("/classrooms")}>
-            Next
-          </button>
+      <div className="container max-w-xl mx-auto mt-8 p-6">
+        <div className="card p-6">
+          <InputList
+            label="Enter Lab Classes"
+            value={labs}
+            setValue={setLabs}
+            placeholder="e.g., OOPS Lab,2,13:00-14:00"
+            onAdd={addLab}
+            onRemove={removeLab}
+            children={(l) => `${l.name}, ${l.duration}${l.preferred ? `, ${l.preferred}` : ""}`}
+          />
+          {error && <div className="text-red-300 mt-2 text-sm">{error}</div>}
+          <div className="flex justify-between mt-6">
+            <button 
+              className="inline-flex items-center justify-center rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white font-semibold px-4 py-2 transition-colors" 
+              onClick={() => router.push("/subjects")}
+            >
+              Back
+            </button>
+            <button
+              className="inline-flex items-center justify-center rounded-lg bg-cyan-400/90 hover:bg-cyan-300 text-slate-900 font-semibold px-4 py-2 transition-colors"
+              onClick={() => router.push("/classrooms")}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </>

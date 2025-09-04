@@ -1,7 +1,5 @@
-// pages/api/auth/[...nextauth].js
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-// Or use GoogleProvider from "next-auth/providers/google" for Google sign-in
 
 export default NextAuth({
   providers: [
@@ -16,10 +14,12 @@ export default NextAuth({
         if (credentials.username === "admin@college.edu" && credentials.password === "password123") {
           return { userId: 1, name: "Admin", email: credentials.username, role: "admin" };
         }
+        if (credentials.username === "approver@college.edu" && credentials.password === "password123") {
+          return { userId: 1, name: "Approver", email: credentials.username, role: "approver" };
+        }
         return null;
       }
     })
-    // Add more providers here (GoogleProvider, etc.)
   ],
   callbacks: {
     async session({ session, token }) {

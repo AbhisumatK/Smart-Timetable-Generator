@@ -144,41 +144,59 @@ export function SchedulerProvider({ children }) {
       setGenerating(false);
     }
   }
-  function addDraft(draft) {
-    setDraftTimetables((drafts) => [...drafts, draft]);
-  }
+  function addDraft(timetableData, metadata = {}) {
+    const newDraft = {
+      id: Date.now().toString(),  // Unique id; use UUID in production ideally
+      timetable: timetableData,
+      status: "draft",            // draft, pending, approved, rejected
+      createdAt: new Date().toISOString(),
+      ...metadata,
+    };
+    setDraftTimetables((drafts) => [...drafts, newDraft]);
+  }
+
   // Submit for approval
-  function submitForApproval(id) {
-    setDraftTimetables((drafts) =>
-      drafts.map((d) => (d.id === id ? { ...d, status: "pending" } : d))
-    );
-  }
+   function submitForApproval(id) {
+    setDraftTimetables((drafts) =>
+      drafts.map((draft) =>
+        draft.id === id ? { ...draft, status: "pending" } : draft
+      )
+    );
+  }
+
   // Approve timetable
   function approveTimetable(id, approver) {
-    setDraftTimetables((drafts) =>
-      drafts.map((d) =>
-        d.id === id
-          ? { ...d, status: "approved", approvedBy: approver, approvedAt: new Date().toISOString() }
-          : d
-      )
-    );
-  }
+    setDraftTimetables((drafts) =>
+      drafts.map((draft) =>
+        draft.id === id
+          ? {
+              ...draft,
+              status: "approved",
+              approvedBy: approver,
+              approvedAt: new Date().toISOString(),
+            }
+          : draft
+      )
+    );
+  }
+
   // Reject timetable with comments
   function rejectTimetable(id, approver, comments) {
-    setDraftTimetables((drafts) =>
-      drafts.map((d) =>
-        d.id === id
-          ? {
-              ...d,
-              status: "rejected",
-              approvedBy: approver,
-              comments,
-              approvedAt: new Date().toISOString(),
-            }
-          : d
-      )
-    );
-  }
+    setDraftTimetables((drafts) =>
+      drafts.map((draft) =>
+        draft.id === id
+          ? {
+              ...draft,
+              status: "rejected",
+              approvedBy: approver,
+              comments,
+              approvedAt: new Date().toISOString(),
+            }
+          : draft
+      )
+    );
+  }
+
 
   return (
     <SchedulerContext.Provider value={{
@@ -195,6 +213,7 @@ export function SchedulerProvider({ children }) {
       generating, generationError,
       currentUser, setCurrentUser,
       generateTimetables,
+      addDraft, submitForApproval,
       approveTimetable, rejectTimetable
     }}>
       {children}

@@ -1,23 +1,25 @@
-let drafts = []; // Simple in-memory store, persists only per server instance
+import { readTimetables, writeTimetables } from "../../../lib/timetableStore";
 
 export default function handler(req, res) {
-  switch (req.method) {
-    case "GET":
-      // Query param ?status=...
-      const status = req.query.status;
-      if (status) {
-        return res.status(200).json(drafts.filter((d) => d.status === status));
-      }
-      res.status(200).json(drafts);
-      break;
-
-    case "POST":
-      const newDraft = { ...req.body, id: Date.now().toString(), status: "draft" };
-      drafts.push(newDraft);
-      res.status(201).json(newDraft);
-      break;
-
-    default:
-      res.status(405).end("Method Not Allowed");
+  if (req.method === "GET") {
+    const { status } = req.query;
+    const timetables = readTimetables();
+    const filteredTimetables = status ? timetables.filter(t => t.status === status) : timetables;
+    res.status(200).json(filteredTimetables);
+  }
+  else if (req.method === "POST") {
+    let timetables = readTimetables();
+    const draft = req.body;
+    if (!draft.timetable) {
+      return res.status(400).json({ error: "Timetable data required" });
+    }
+    draft.id = Date.now().toString();
+    draft.status = draft.status || "pending";
+    draft.createdAt = new Date().toISOString();
+    timetables.push(draft);
+    writeTimetables(timetables);
+    res.status(201).json(draft);
+  } else {
+    res.status(405).json({ error: "Method not allowed" });
   }
 }
