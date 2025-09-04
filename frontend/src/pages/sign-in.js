@@ -9,6 +9,10 @@ export default function SignIn() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  let callbackUrl = router.query.callbackUrl || "/";
+  if (callbackUrl.includes("/signin")) {
+    callbackUrl = "/";
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,15 +20,17 @@ export default function SignIn() {
     setError('');
 
     const result = await signIn('credentials', {
-      email,
+      username: email,
       password,
       redirect: false,
+      callbackUrl
     });
 
     if (result?.error) {
       setError('Invalid credentials. Please try again.');
-    } else {
-      router.push('/');
+    } 
+    else if (result?.ok) {
+      window.location.href = result.url || "/";
     }
     setLoading(false);
   };
