@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   // Construct prompt with inputs (example)
   const prompt = `
-    You are an expert academic timetable scheduler AI.
+    You are an expert and smart academic timetable scheduler AI.
     Using the inputs provided:
 
     - Classrooms available: ${classrooms.join(", ")}
@@ -49,7 +49,6 @@ export default async function handler(req, res) {
     const timetableOptions = chatCompletion.choices[0].message.content;
     console.log(timetableOptions)
 
-    // timetableOptions should already be a JSON object because response_format is json_object
     return res.status(200).json({ timetableOptions });
   } catch (error) {
     console.error("Groq API error:", error);

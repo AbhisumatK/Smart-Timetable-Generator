@@ -1,38 +1,34 @@
 import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { useAuth } from '../context/AuthContext';
 
 export default function SignIn() {
+  const { login } = useAuth();
+  const router = useRouter();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  let callbackUrl = router.query.callbackUrl || "/";
-  if (callbackUrl.includes("/signin")) {
-    callbackUrl = "/";
-  }
+
+  const callbackUrl = router.query.callbackUrl || "/";
+  // Prevent redirect loop to sign-in page
+  const redirectUrl = callbackUrl.includes("/sign-in") ? "/" : callbackUrl;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    const result = await signIn('credentials', {
-      username: email,
-      password,
-      redirect: false,
-      callbackUrl
-    });
-
-    if (result?.error) {
+    try {
+      await login(email, password);
+      router.push(redirectUrl);
+    } catch (err) {
       setError('Invalid credentials. Please try again.');
-    } 
-    else if (result?.ok) {
-      window.location.href = result.url || "/";
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -149,4 +145,4 @@ export default function SignIn() {
       </div>
     </div>
   );
-} 
+}

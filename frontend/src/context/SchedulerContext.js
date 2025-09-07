@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { getSession, signIn } from "next-auth/react";
 
 const SchedulerContext = createContext();
 
@@ -7,8 +6,8 @@ function userKey(userId, key) {
   return `user-${userId || "guest"}-${key}`;
 }
 
-export function SchedulerProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState();
+export function SchedulerProvider({ children, currentUser: providedUser }) {
+  const [currentUser, setCurrentUser] = useState(providedUser || null);
   const [timeSlots, setTimeSlots] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [labs, setLabs] = useState([]);
@@ -21,14 +20,6 @@ export function SchedulerProvider({ children }) {
   const [draftTimetables, setDraftTimetables] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [generationError, setGenerationError] = useState(null);
-
-  // Load user session and sign-in redirect if no session
-  useEffect(() => {
-    getSession().then((session) => {
-      if (!session) signIn();
-      else setCurrentUser(session.user);
-    });
-  }, []);
 
   // Hydrate states from localStorage after currentUser is set
   useEffect(() => {
@@ -59,7 +50,6 @@ export function SchedulerProvider({ children }) {
   }, [currentUser]);
 
   // Save changes back to localStorage keyed by user id
-
   useEffect(() => {
     if (!currentUser || !timeSlots) return;
     localStorage.setItem(userKey(currentUser.id, "timeSlots"), JSON.stringify(timeSlots));
@@ -111,16 +101,15 @@ export function SchedulerProvider({ children }) {
   }, [draftTimetables, currentUser]);
 
   async function generateTimetables(inputData) {
-    setGenerating(true);
-    setGenerationError(null);
-    try {
-      // Compose input data from existing state
-      const res = await fetch("/api/generateTimetable", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(inputData),
-      });
-      if (!res.ok) throw new Error("Timetable generation failed");
+    setGenerating(true);
+    setGenerationError(null);
+    try {
+      const res = await fetch("/api/generateTimetable", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(inputData),
+      });
+      if (!res.ok) throw new Error("Timetable generation failed");
 
       const data = await res.json();
       let options = data.timetableOptions;
@@ -137,26 +126,26 @@ export function SchedulerProvider({ children }) {
           options = [];
         }
       }
-      setTimetableOptions(options);
-    } catch (error) {
-      setGenerationError(error.message);
-    } finally {
-      setGenerating(false);
-    }
-  }
-  function addDraft(timetableData, metadata = {}) {
+      setTimetableOptions(options);
+    } catch (error) {
+      setGenerationError(error.message);
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  function addDraft(timetableData, metadata = {}) {
     const newDraft = {
-      id: Date.now().toString(),  // Unique id; use UUID in production ideally
+      id: Date.now().toString(),
       timetable: timetableData,
-      status: "draft",            // draft, pending, approved, rejected
+      status: "draft",
       createdAt: new Date().toISOString(),
       ...metadata,
     };
     setDraftTimetables((drafts) => [...drafts, newDraft]);
   }
 
-  // Submit for approval
-   function submitForApproval(id) {
+  function submitForApproval(id) {
     setDraftTimetables((drafts) =>
       drafts.map((draft) =>
         draft.id === id ? { ...draft, status: "pending" } : draft
@@ -164,8 +153,7 @@ export function SchedulerProvider({ children }) {
     );
   }
 
-  // Approve timetable
-  function approveTimetable(id, approver) {
+  function approveTimetable(id, approver) {
     setDraftTimetables((drafts) =>
       drafts.map((draft) =>
         draft.id === id
@@ -180,8 +168,7 @@ export function SchedulerProvider({ children }) {
     );
   }
 
-  // Reject timetable with comments
-  function rejectTimetable(id, approver, comments) {
+  function rejectTimetable(id, approver, comments) {
     setDraftTimetables((drafts) =>
       drafts.map((draft) =>
         draft.id === id
@@ -197,25 +184,40 @@ export function SchedulerProvider({ children }) {
     );
   }
 
-
   return (
-    <SchedulerContext.Provider value={{
-      timeSlots, setTimeSlots,
-      subjects, setSubjects,
-      labs, setLabs,
-      classrooms, setClassrooms,
-      timetable, setTimetable,
-      conflicts, setConflicts,
-      timetableOptions, setTimetableOptions,
-      facultyAssignments, setFacultyAssignments,
-      fixedClasses, setFixedClasses,
-      draftTimetables, setDraftTimetables,
-      generating, generationError,
-      currentUser, setCurrentUser,
-      generateTimetables,
-      addDraft, submitForApproval,
-      approveTimetable, rejectTimetable
-    }}>
+    <SchedulerContext.Provider
+      value={{
+        timeSlots,
+        setTimeSlots,
+        subjects,
+        setSubjects,
+        labs,
+        setLabs,
+        classrooms,
+        setClassrooms,
+        timetable,
+        setTimetable,
+        conflicts,
+        setConflicts,
+        timetableOptions,
+        setTimetableOptions,
+        facultyAssignments,
+        setFacultyAssignments,
+        fixedClasses,
+        setFixedClasses,
+        draftTimetables,
+        setDraftTimetables,
+        generating,
+        generationError,
+        currentUser,
+        setCurrentUser,
+        generateTimetables,
+        addDraft,
+        submitForApproval,
+        approveTimetable,
+        rejectTimetable,
+      }}
+    >
       {children}
     </SchedulerContext.Provider>
   );

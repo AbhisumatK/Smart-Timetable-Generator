@@ -1,4 +1,5 @@
 import { useScheduler } from "../context/SchedulerContext";
+import { useTheme } from "../context/ThemeContext";
 import Stepper from "../components/Stepper";
 import Navbar from "../components/Navbar";
 import { useRouter } from "next/router";
@@ -6,8 +7,10 @@ import { useState } from "react";
 import Link from "next/link";
 import InputList from "../components/InputList";
 
+SubjectsPage.auth = true;
 export default function SubjectsPage() {
   const { subjects, setSubjects, facultyAssignments, setFacultyAssignments } = useScheduler();
+  const { isDark } = useTheme();
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -53,7 +56,10 @@ export default function SubjectsPage() {
   return (
     <>
       <Navbar />
-      <Stepper step={2} />
+      {/* Padding above the Stepper */}
+      <div className="pt-8">
+        <Stepper step={3} />
+      </div>
       <div className="page-container">
         <div className="content-wrapper">
           <div className="text-center mb-8">
@@ -108,17 +114,17 @@ export default function SubjectsPage() {
             </div>
 
             {subjects.length > 0 && (
-              <div className="mt-8 pt-6 border-t border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-200 mb-4">Added Subjects</h3>
+              <div className={`mt-8 pt-6 border-t ${isDark ? "border-slate-700/50" : "border-slate-300/50"}`}>
+                <h3 className={`text-lg font-semibold mb-4 ${isDark ? "text-slate-200" : "text-slate-800"}`}>Added Subjects</h3>
                 <div className="space-y-3 max-h-64 overflow-auto">
                   {subjects.map((s, i) => (
                     <div key={i} className="card-compact flex justify-between items-center">
-                      <div className="text-slate-200">
+                      <div className={isDark ? "text-slate-200" : "text-slate-800"}>
                         <div className="font-semibold">{s.name}</div>
-                        <div className="text-sm text-slate-400">
+                        <div className={`text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>
                           {s.weekly} classes per week
                         </div>
-                        <div className="text-xs text-slate-500 mt-1">
+                        <div className={`text-xs mt-1 ${isDark ? "text-slate-500" : "text-slate-700"}`}>
                           Faculty: {(facultyAssignments[s.name] || []).join(", ") || "None assigned"}
                         </div>
                       </div>
@@ -137,7 +143,7 @@ export default function SubjectsPage() {
               </div>
             )}
 
-            <div className="flex justify-between mt-8 pt-6 border-t border-slate-700/50">
+            <div className={`flex justify-between mt-8 pt-6 border-t ${isDark ? "border-slate-700/50" : "border-slate-300/50"}`}>
               <button
                 className="btn-secondary"
                 onClick={() => router.push("/timeslots")}

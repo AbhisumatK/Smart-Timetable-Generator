@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 export default function TimetableTable({
   timetable,
@@ -8,8 +9,49 @@ export default function TimetableTable({
 }) {
   const days = Object.keys(timetable);
   const [selectedBlock, setSelectedBlock] = useState(null);
+  const { isDark } = useTheme();
+
+  const renderCellContent = (value) => {
+    if (!value || value === "") return <span className={`italic ${
+      isDark ? "text-slate-500" : "text-slate-600"
+    }`}>--</span>;
+    if (Array.isArray(value)) {
+      return value.map((v, i) => (
+        <div key={i} className={`truncate font-medium ${
+          isDark ? "text-white" : "text-slate-800"
+        }`}>{typeof v === "object" ? v?.subject || "--" : String(v)}</div>
+      ));
+    }
+    if (typeof value === "object") {
+      const subject = value.subject || "";
+      const faculty = value.faculty || "";
+      const room = value.room || "";
+      return (
+        <div className="leading-tight">
+          <div className={`font-bold truncate drop-shadow-sm ${
+            isDark ? "text-white" : "text-slate-800"
+          }`} title={subject || "--"}>
+            {subject || "--"}
+          </div>
+          {(faculty || room) && (
+            <div className={`text-xs truncate drop-shadow-sm ${
+              isDark ? "text-cyan-200" : "text-cyan-700"
+            }`} title={`${faculty}${faculty && room ? " • " : ""}${room}`}>
+              {faculty}
+              {faculty && room && " • "}
+              {room}
+            </div>
+          )}
+        </div>
+      );
+    }
+    return <span className={`truncate font-medium drop-shadow-sm ${
+      isDark ? "text-white" : "text-slate-800"
+    }`} title={String(value)}>{value}</span>;
+  };
 
   const handleBlockClick = (day, slot) => {
+    if (!customizeMode) return;
     if (!selectedBlock) {
       setSelectedBlock({ day, slot });
     } else {
@@ -35,41 +77,74 @@ export default function TimetableTable({
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border border-slate-600/50 mt-4 bg-slate-800/30 backdrop-blur rounded-lg">
+    <div className="w-full max-w-full">
+      <table className={`w-full border mt-4 backdrop-blur-xl rounded-xl table-fixed shadow-2xl ${
+        isDark 
+          ? "border-cyan-500/30 bg-gradient-to-br from-slate-800/40 via-slate-700/30 to-slate-800/40 shadow-cyan-500/10"
+          : "border-cyan-500/50 bg-gradient-to-br from-white/90 via-slate-50/80 to-white/90 shadow-cyan-500/30"
+      }`}>
         <thead>
-          <tr className="bg-slate-700/50">
-            <th className="border border-slate-600/50 px-3 py-2 text-slate-200 font-semibold">
+          <tr className={`backdrop-blur ${
+            isDark 
+              ? "bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20"
+              : "bg-gradient-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30"
+          }`}>
+            <th className={`border px-1 py-1 font-bold text-xs sm:text-sm w-16 sm:w-20 ${
+              isDark 
+                ? "border-cyan-500/30 text-cyan-200 bg-gradient-to-br from-cyan-500/10 to-blue-500/10"
+                : "border-cyan-500/50 text-cyan-800 bg-gradient-to-br from-cyan-500/20 to-blue-500/20"
+            }`}>
               Day
             </th>
             {timeSlots.map((slot, idx) => (
               <th
                 key={idx}
-                className="border border-slate-600/50 px-3 py-2 text-slate-200 font-semibold"
+                className={`border px-1 py-1 font-bold text-xs sm:text-sm ${
+                  isDark 
+                    ? "border-cyan-500/30 text-cyan-200 bg-gradient-to-br from-cyan-500/10 to-blue-500/10"
+                    : "border-cyan-500/50 text-cyan-800 bg-gradient-to-br from-cyan-500/20 to-blue-500/20"
+                }`}
               >
-                {slot}
+                <div className="truncate" title={slot}>
+                  {slot}
+                </div>
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {days.map((day) => (
-            <tr key={day} className="hover:bg-slate-700/30">
-              <td className="border border-slate-600/50 px-3 py-2 font-bold text-slate-200">
-                {day}
+            <tr key={day} className={`transition-all duration-300 ${
+              isDark 
+                ? "hover:bg-gradient-to-r hover:from-slate-700/20 hover:to-slate-600/20"
+                : "hover:bg-gradient-to-r hover:from-slate-200/50 hover:to-slate-300/50"
+            }`}>
+              <td className={`border px-1 py-1 font-bold text-xs sm:text-sm w-16 sm:w-20 ${
+                isDark 
+                  ? "border-cyan-500/20 text-cyan-200 bg-gradient-to-br from-slate-700/30 to-slate-600/30"
+                  : "border-cyan-500/40 text-cyan-800 bg-gradient-to-br from-slate-200/60 to-slate-300/60"
+              }`}>
+                <div className="truncate" title={day}>
+                  {day}
+                </div>
               </td>
               {timeSlots.map((slot, idx) => {
-                const isSelected =
-                  selectedBlock?.day === day && selectedBlock?.slot === slot;
+                const isSelected = selectedBlock?.day === day && selectedBlock?.slot === slot;
                 return (
                   <td
                     key={idx}
-                    className={`border border-slate-600/50 px-3 py-2 text-slate-300 cursor-pointer select-none ${
-                      isSelected ? "bg-cyan-600 text-white" : ""
+                    className={`border px-1 py-1 cursor-pointer select-none transition-all duration-300 text-xs sm:text-sm ${
+                      isSelected
+                        ? "bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30 scale-105 border-cyan-500/50"
+                        : isDark
+                          ? "border-cyan-500/20 text-slate-300 hover:bg-gradient-to-br hover:from-cyan-500/30 hover:to-blue-500/30 hover:text-white hover:shadow-lg hover:shadow-cyan-500/20 hover:scale-105"
+                          : "border-cyan-500/40 text-slate-700 hover:bg-gradient-to-br hover:from-cyan-500/40 hover:to-blue-500/40 hover:text-white hover:shadow-lg hover:shadow-cyan-500/30 hover:scale-105"
                     }`}
                     onClick={() => handleBlockClick(day, slot)}
                   >
-                    {timetable[day][slot] || "--"}
+                    <div className="truncate">
+                      {renderCellContent(timetable[day][slot])}
+                    </div>
                   </td>
                 );
               })}
