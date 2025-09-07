@@ -11,45 +11,6 @@ export default function TimetableTable({
   const [selectedBlock, setSelectedBlock] = useState(null);
   const { isDark } = useTheme();
 
-  const renderCellContent = (value) => {
-    if (!value || value === "") return <span className={`italic ${
-      isDark ? "text-slate-500" : "text-slate-600"
-    }`}>--</span>;
-    if (Array.isArray(value)) {
-      return value.map((v, i) => (
-        <div key={i} className={`truncate font-medium ${
-          isDark ? "text-white" : "text-slate-800"
-        }`}>{typeof v === "object" ? v?.subject || "--" : String(v)}</div>
-      ));
-    }
-    if (typeof value === "object") {
-      const subject = value.subject || "";
-      const faculty = value.faculty || "";
-      const room = value.room || "";
-      return (
-        <div className="leading-tight">
-          <div className={`font-bold truncate drop-shadow-sm ${
-            isDark ? "text-white" : "text-slate-800"
-          }`} title={subject || "--"}>
-            {subject || "--"}
-          </div>
-          {(faculty || room) && (
-            <div className={`text-xs truncate drop-shadow-sm ${
-              isDark ? "text-cyan-200" : "text-cyan-700"
-            }`} title={`${faculty}${faculty && room ? " • " : ""}${room}`}>
-              {faculty}
-              {faculty && room && " • "}
-              {room}
-            </div>
-          )}
-        </div>
-      );
-    }
-    return <span className={`truncate font-medium drop-shadow-sm ${
-      isDark ? "text-white" : "text-slate-800"
-    }`} title={String(value)}>{value}</span>;
-  };
-
   const handleBlockClick = (day, slot) => {
     if (!customizeMode) return;
     if (!selectedBlock) {
@@ -78,29 +39,35 @@ export default function TimetableTable({
 
   return (
     <div className="w-full max-w-full">
-      <table className={`w-full border mt-4 backdrop-blur-xl rounded-xl table-fixed shadow-2xl ${
-        isDark 
-          ? "border-cyan-500/30 bg-gradient-to-br from-slate-800/40 via-slate-700/30 to-slate-800/40 shadow-cyan-500/10"
-          : "border-cyan-500/50 bg-gradient-to-br from-white/90 via-slate-50/80 to-white/90 shadow-cyan-500/30"
-      }`}>
+      <table
+        className={`w-full border mt-4 backdrop-blur-xl rounded-xl table-fixed shadow-2xl ${
+          isDark
+            ? "border-cyan-500/30 bg-gradient-to-br from-slate-800/40 via-slate-700/30 to-slate-800/40 shadow-cyan-500/10"
+            : "border-cyan-500/50 bg-gradient-to-br from-white/90 via-slate-50/80 to-white/90 shadow-cyan-500/30"
+        }`}
+      >
         <thead>
-          <tr className={`backdrop-blur ${
-            isDark 
-              ? "bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20"
-              : "bg-gradient-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30"
-          }`}>
-            <th className={`border px-1 py-1 font-bold text-xs sm:text-sm w-16 sm:w-20 ${
-              isDark 
-                ? "border-cyan-500/30 text-cyan-200 bg-gradient-to-br from-cyan-500/10 to-blue-500/10"
-                : "border-cyan-500/50 text-cyan-800 bg-gradient-to-br from-cyan-500/20 to-blue-500/20"
-            }`}>
+          <tr
+            className={`backdrop-blur ${
+              isDark
+                ? "bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20"
+                : "bg-gradient-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30"
+            }`}
+          >
+            <th
+              className={`border px-1 py-1 font-bold text-xs sm:text-sm w-16 sm:w-20 ${
+                isDark
+                  ? "border-cyan-500/30 text-cyan-200 bg-gradient-to-br from-cyan-500/10 to-blue-500/10"
+                  : "border-cyan-500/50 text-cyan-800 bg-gradient-to-br from-cyan-500/20 to-blue-500/20"
+              }`}
+            >
               Day
             </th>
             {timeSlots.map((slot, idx) => (
               <th
                 key={idx}
                 className={`border px-1 py-1 font-bold text-xs sm:text-sm ${
-                  isDark 
+                  isDark
                     ? "border-cyan-500/30 text-cyan-200 bg-gradient-to-br from-cyan-500/10 to-blue-500/10"
                     : "border-cyan-500/50 text-cyan-800 bg-gradient-to-br from-cyan-500/20 to-blue-500/20"
                 }`}
@@ -114,22 +81,32 @@ export default function TimetableTable({
         </thead>
         <tbody>
           {days.map((day) => (
-            <tr key={day} className={`transition-all duration-300 ${
-              isDark 
-                ? "hover:bg-gradient-to-r hover:from-slate-700/20 hover:to-slate-600/20"
-                : "hover:bg-gradient-to-r hover:from-slate-200/50 hover:to-slate-300/50"
-            }`}>
-              <td className={`border px-1 py-1 font-bold text-xs sm:text-sm w-16 sm:w-20 ${
-                isDark 
-                  ? "border-cyan-500/20 text-cyan-200 bg-gradient-to-br from-slate-700/30 to-slate-600/30"
-                  : "border-cyan-500/40 text-cyan-800 bg-gradient-to-br from-slate-200/60 to-slate-300/60"
-              }`}>
+            <tr
+              key={day}
+              className={`transition-all duration-300 ${
+                isDark
+                  ? "hover:bg-gradient-to-r hover:from-slate-700/20 hover:to-slate-600/20"
+                  : "hover:bg-gradient-to-r hover:from-slate-200/50 hover:to-slate-300/50"
+              }`}
+            >
+              <td
+                className={`border px-1 py-1 font-bold text-xs sm:text-sm w-16 sm:w-20 ${
+                  isDark
+                    ? "border-cyan-500/20 text-cyan-200 bg-gradient-to-br from-slate-700/30 to-slate-600/30"
+                    : "border-cyan-500/40 text-cyan-800 bg-gradient-to-br from-slate-200/60 to-slate-300/60"
+                }`}
+              >
                 <div className="truncate" title={day}>
                   {day}
                 </div>
               </td>
               {timeSlots.map((slot, idx) => {
-                const isSelected = selectedBlock?.day === day && selectedBlock?.slot === slot;
+                const isSelected =
+                  selectedBlock?.day === day && selectedBlock?.slot === slot;
+
+                // Safely access cell, handling missing data
+                const cell = timetable[day]?.[slot];
+
                 return (
                   <td
                     key={idx}
@@ -137,13 +114,56 @@ export default function TimetableTable({
                       isSelected
                         ? "bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30 scale-105 border-cyan-500/50"
                         : isDark
-                          ? "border-cyan-500/20 text-slate-300 hover:bg-gradient-to-br hover:from-cyan-500/30 hover:to-blue-500/30 hover:text-white hover:shadow-lg hover:shadow-cyan-500/20 hover:scale-105"
-                          : "border-cyan-500/40 text-slate-700 hover:bg-gradient-to-br hover:from-cyan-500/40 hover:to-blue-500/40 hover:text-white hover:shadow-lg hover:shadow-cyan-500/30 hover:scale-105"
+                        ? "border-cyan-500/20 text-slate-300 hover:bg-gradient-to-br hover:from-cyan-500/30 hover:to-blue-500/30 hover:text-white hover:shadow-lg hover:shadow-cyan-500/20 hover:scale-105"
+                        : "border-cyan-500/40 text-slate-700 hover:bg-gradient-to-br hover:from-cyan-500/40 hover:to-blue-500/40 hover:text-white hover:shadow-lg hover:shadow-cyan-500/30 hover:scale-105"
                     }`}
                     onClick={() => handleBlockClick(day, slot)}
                   >
                     <div className="truncate">
-                      {renderCellContent(timetable[day][slot])}
+                      {!cell || Object.keys(cell).length === 0 ? (
+                        <span
+                          className={`italic ${
+                            isDark ? "text-slate-500" : "text-slate-600"
+                          }`}
+                        >
+                          --
+                        </span>
+                      ) : (
+                        Object.entries(cell).map(([room, info]) => {
+                          const subject = info.subject || "--";
+                          const faculty = info.faculty || "";
+                          return (
+                            <div key={room} className="mb-1 last:mb-0">
+                              <strong
+                                title={`Classroom ${room}`}
+                                className="block truncate font-semibold"
+                              >
+                                Room {room}
+                              </strong>
+                              <div className="truncate">
+                                <span
+                                  className={`font-bold ${
+                                    isDark ? "text-white" : "text-slate-800"
+                                  }`}
+                                  title={subject}
+                                >
+                                  {subject}
+                                </span>
+                                {faculty && (
+                                  <span
+                                    className={`text-xs ml-1 ${
+                                      isDark ? "text-cyan-200" : "text-cyan-700"
+                                    }`}
+                                    title={faculty}
+                                  >
+                                    ({faculty})
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   </td>
                 );

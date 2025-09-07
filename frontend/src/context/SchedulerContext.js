@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 
 const SchedulerContext = createContext();
 
@@ -6,99 +6,74 @@ function userKey(userId, key) {
   return `user-${userId || "guest"}-${key}`;
 }
 
+// Custom hook to sync state with localStorage per key
+function useLocalStorageState(key, defaultValue) {
+  const [value, setValue] = useState(() => {
+    if (typeof window === "undefined") return defaultValue;
+    try {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {}
+  }, [key, value]);
+
+  return [value, setValue];
+}
+
 export function SchedulerProvider({ children, currentUser: providedUser }) {
   const [currentUser, setCurrentUser] = useState(providedUser || null);
-  const [timeSlots, setTimeSlots] = useState([]);
-  const [subjects, setSubjects] = useState([]);
-  const [labs, setLabs] = useState([]);
-  const [classrooms, setClassrooms] = useState([]);
-  const [timetable, setTimetable] = useState(null);
-  const [conflicts, setConflicts] = useState([]);
-  const [timetableOptions, setTimetableOptions] = useState([]);
-  const [facultyAssignments, setFacultyAssignments] = useState({});
-  const [fixedClasses, setFixedClasses] = useState([]);
-  const [draftTimetables, setDraftTimetables] = useState([]);
+
+  // Compose keys using user id
+  const timeSlotsKey = userKey(currentUser?.id, "timeSlots");
+  const subjectsKey = userKey(currentUser?.id, "subjects");
+  const labsKey = userKey(currentUser?.id, "labs");
+  const classroomsKey = userKey(currentUser?.id, "classrooms");
+  const timetableKey = userKey(currentUser?.id, "timetable");
+  const conflictsKey = userKey(currentUser?.id, "conflicts");
+  const timetableOptionsKey = userKey(currentUser?.id, "timetableOptions");
+  const facultyAssignmentsKey = userKey(currentUser?.id, "facultyAssignments");
+  const fixedClassesKey = userKey(currentUser?.id, "fixedClasses");
+  const draftTimetablesKey = userKey(currentUser?.id, "draftTimetables");
+
+  // Use new custom hook for each piece of state
+  const [timeSlots, setTimeSlots] = useLocalStorageState(timeSlotsKey, []);
+  const [subjects, setSubjects] = useLocalStorageState(subjectsKey, []);
+  const [labs, setLabs] = useLocalStorageState(labsKey, []);
+  const [classrooms, setClassrooms] = useLocalStorageState(classroomsKey, []);
+  const [timetable, setTimetable] = useLocalStorageState(timetableKey, null);
+  const [conflicts, setConflicts] = useLocalStorageState(conflictsKey, []);
+  const [timetableOptions, setTimetableOptions] = useLocalStorageState(timetableOptionsKey, []);
+  const [facultyAssignments, setFacultyAssignments] = useLocalStorageState(facultyAssignmentsKey, {});
+  const [fixedClasses, setFixedClasses] = useLocalStorageState(fixedClassesKey, []);
+  const [draftTimetables, setDraftTimetables] = useLocalStorageState(draftTimetablesKey, []);
+
   const [generating, setGenerating] = useState(false);
   const [generationError, setGenerationError] = useState(null);
+  const prevUserRef = useRef();
 
-  // Hydrate states from localStorage after currentUser is set
   useEffect(() => {
-    if (!currentUser) return;
-    if (typeof window === "undefined") return;
-
-    const ls = window.localStorage;
-
-    const loadOrDefault = (key, defaultValue) => {
-      const item = ls.getItem(userKey(currentUser.id, key));
-      try {
-        return item ? JSON.parse(item) : defaultValue;
-      } catch {
-        return defaultValue;
-      }
-    };
-
-    setTimeSlots(loadOrDefault("timeSlots", []));
-    setSubjects(loadOrDefault("subjects", []));
-    setLabs(loadOrDefault("labs", []));
-    setClassrooms(loadOrDefault("classrooms", []));
-    setTimetable(loadOrDefault("timetable", null));
-    setConflicts(loadOrDefault("conflicts", []));
-    setTimetableOptions(loadOrDefault("timetableOptions", []));
-    setFacultyAssignments(loadOrDefault("facultyAssignments", {}));
-    setFixedClasses(loadOrDefault("fixedClasses", []));
-    setDraftTimetables(loadOrDefault("draftTimetables", []));
+    if (prevUserRef.current && prevUserRef.current.id !== currentUser?.id) {
+      setTimeSlots([]);
+      setSubjects([]);
+      setLabs([]);
+      setClassrooms([]);
+      setTimetable(null);
+      setConflicts([]);
+      setTimetableOptions([]);
+      setFacultyAssignments({});
+      setFixedClasses([]);
+      setDraftTimetables([]);
+    }
+    prevUserRef.current = currentUser;
   }, [currentUser]);
-
-  // Save changes back to localStorage keyed by user id
-  useEffect(() => {
-    if (!currentUser || !timeSlots) return;
-    localStorage.setItem(userKey(currentUser.id, "timeSlots"), JSON.stringify(timeSlots));
-  }, [timeSlots, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser || !subjects) return;
-    localStorage.setItem(userKey(currentUser.id, "subjects"), JSON.stringify(subjects));
-  }, [subjects, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser || !labs) return;
-    localStorage.setItem(userKey(currentUser.id, "labs"), JSON.stringify(labs));
-  }, [labs, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser || !classrooms) return;
-    localStorage.setItem(userKey(currentUser.id, "classrooms"), JSON.stringify(classrooms));
-  }, [classrooms, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    localStorage.setItem(userKey(currentUser.id, "timetable"), JSON.stringify(timetable));
-  }, [timetable, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser || !conflicts) return;
-    localStorage.setItem(userKey(currentUser.id, "conflicts"), JSON.stringify(conflicts));
-  }, [conflicts, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser || !timetableOptions) return;
-    localStorage.setItem(userKey(currentUser.id, "timetableOptions"), JSON.stringify(timetableOptions));
-  }, [timetableOptions, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser || !facultyAssignments) return;
-    localStorage.setItem(userKey(currentUser.id, "facultyAssignments"), JSON.stringify(facultyAssignments));
-  }, [facultyAssignments, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser || !fixedClasses) return;
-    localStorage.setItem(userKey(currentUser.id, "fixedClasses"), JSON.stringify(fixedClasses));
-  }, [fixedClasses, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser || !draftTimetables) return;
-    localStorage.setItem(userKey(currentUser.id, "draftTimetables"), JSON.stringify(draftTimetables));
-  }, [draftTimetables, currentUser]);
 
   async function generateTimetables(inputData) {
     setGenerating(true);
@@ -147,9 +122,7 @@ export function SchedulerProvider({ children, currentUser: providedUser }) {
 
   function submitForApproval(id) {
     setDraftTimetables((drafts) =>
-      drafts.map((draft) =>
-        draft.id === id ? { ...draft, status: "pending" } : draft
-      )
+      drafts.map((draft) => (draft.id === id ? { ...draft, status: "pending" } : draft))
     );
   }
 
