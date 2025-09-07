@@ -41,7 +41,7 @@ export default function TimeSlotsPage() {
       <Navbar />
       {/* Padding above the Stepper */}
       <div className="pt-8">
-        <Stepper step={2} />
+        <Stepper step={1} />
       </div>
       <div className="page-container">
         <div className="content-wrapper">

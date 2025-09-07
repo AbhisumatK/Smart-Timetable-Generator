@@ -6,12 +6,12 @@ import { useRouter } from "next/router";
 
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-fixedClasses.auth = true;
+FixedClassesPage.auth = true;
 export default function FixedClassesPage() {
   const { fixedClasses, setFixedClasses, classrooms, timeSlots } = useScheduler();
-  const [day, setDay] = useState(daysOfWeek[0]);
-  const [time, setTime] = useState(timeSlots.length > 0 ? timeSlots[0] : "");
-  const [room, setRoom] = useState(classrooms.length > 0 ? classrooms[0] : "");
+  const [day, setDay] = useState("");
+  const [time, setTime] = useState("");
+  const [room, setRoom] = useState("");
   const [subject, setSubject] = useState("");
   const [faculty, setFaculty] = useState("");
   const [error, setError] = useState("");
@@ -48,23 +48,35 @@ export default function FixedClassesPage() {
         <div className="space-y-3 mb-4">
           <div>
             <label>Day:</label>
-            <select value={day} onChange={e => setDay(e.target.value)} className="ml-2 p-1 border rounded">
-              {daysOfWeek.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
+            <input
+              list="days-list"
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
+              className="ml-2 p-1 border rounded"
+              placeholder="Select or type day"
+            />
           </div>
 
           <div>
             <label>Time Slot:</label>
-            <select value={time} onChange={e => setTime(e.target.value)} className="ml-2 p-1 border rounded">
-              {timeSlots.map(ts => <option key={ts} value={ts}>{ts}</option>)}
-            </select>
+            <input
+              list="timeslots-list"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="ml-2 p-1 border rounded"
+              placeholder="Select or type time slot"
+            />
           </div>
 
           <div>
             <label>Room:</label>
-            <select value={room} onChange={e => setRoom(e.target.value)} className="ml-2 p-1 border rounded">
-              {classrooms.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
+            <input
+              list="rooms-list"
+              value={room}
+              onChange={(e) => setRoom(e.target.value)}
+              className="ml-2 p-1 border rounded"
+              placeholder="Select or type room"
+            />
           </div>
 
           <div>
