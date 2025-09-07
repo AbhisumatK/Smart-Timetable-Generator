@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useScheduler } from "../context/SchedulerContext";
 import TimetableTable from "../components/TimetableTable";
 
+DraftsPage.auth = true;
 export default function DraftsPage() {
   const router = useRouter();
   const { currentUser } = useScheduler();

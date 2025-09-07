@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+LabsPage.auth = true;
 export default function LabsPage() {
   const { labs, setLabs, timeSlots } = useScheduler();
   const { isDark } = useTheme();

@@ -7,6 +7,7 @@ import TimetableTable from "../components/TimetableTable";
 import ConflictBanner from "../components/ConflictBanner";
 import Stepper from "../components/Stepper";
 
+TimetablePage.auth = true;
 export default function TimetablePage() {
   const router = useRouter();
   const { isDark } = useTheme();

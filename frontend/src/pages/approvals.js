@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import TimetableTable from "../components/TimetableTable";
 import { useScheduler } from "../context/SchedulerContext";
 
+ApprovalPage.auth = true;
 export default function ApprovalPage() {
   const { currentUser } = useScheduler();
   const [pendingTimetables, setPendingTimetables] = useState([]);

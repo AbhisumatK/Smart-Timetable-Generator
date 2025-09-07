@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+ClassroomsPage.auth = true;
 export default function ClassroomsPage() {
   const { classrooms, setClassrooms } = useScheduler();
   const { isDark } = useTheme();

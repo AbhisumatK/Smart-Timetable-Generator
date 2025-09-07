@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 
+TimeSlotsPage.auth = true;
 export default function TimeSlotsPage() {
   const { timeSlots, setTimeSlots } = useScheduler();
   const { isDark } = useTheme();

@@ -7,6 +7,7 @@ import { useState } from "react";
 import Link from "next/link";
 import InputList from "../components/InputList";
 
+SubjectsPage.auth = true;
 export default function SubjectsPage() {
   const { subjects, setSubjects, facultyAssignments, setFacultyAssignments } = useScheduler();
   const { isDark } = useTheme();

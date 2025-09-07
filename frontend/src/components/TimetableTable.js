@@ -51,6 +51,7 @@ export default function TimetableTable({
   };
 
   const handleBlockClick = (day, slot) => {
+    if (!customizeMode) return;
     if (!selectedBlock) {
       setSelectedBlock({ day, slot });
     } else {
@@ -128,13 +129,12 @@ export default function TimetableTable({
                 </div>
               </td>
               {timeSlots.map((slot, idx) => {
-                const isSelected =
-                  selectedBlock?.day === day && selectedBlock?.slot === slot;
+                const isSelected = selectedBlock?.day === day && selectedBlock?.slot === slot;
                 return (
                   <td
                     key={idx}
                     className={`border px-1 py-1 cursor-pointer select-none transition-all duration-300 text-xs sm:text-sm ${
-                      isSelected 
+                      isSelected
                         ? "bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30 scale-105 border-cyan-500/50"
                         : isDark
                           ? "border-cyan-500/20 text-slate-300 hover:bg-gradient-to-br hover:from-cyan-500/30 hover:to-blue-500/30 hover:text-white hover:shadow-lg hover:shadow-cyan-500/20 hover:scale-105"

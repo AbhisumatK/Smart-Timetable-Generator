@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
+fixedClasses.auth = true;
 export default function FixedClassesPage() {
   const { fixedClasses, setFixedClasses, classrooms, timeSlots } = useScheduler();
   const [day, setDay] = useState(daysOfWeek[0]);

@@ -1,5 +1,6 @@
 import { useScheduler } from "../context/SchedulerContext";
 
+TimetableGenerator.auth = true;
 export default function TimetableGenerator() {
   const {
     timetableOptions, generating, generationError, generateTimetables
@@ -26,7 +27,6 @@ export default function TimetableGenerator() {
               <pre className="text-sm overflow-auto max-h-64 mt-2 whitespace-pre-wrap">
                 {JSON.stringify(opt.schedule || opt, null, 2)}
               </pre>
-              {/* Add 'Select' button logic here if desired, e.g. to save choice */}
             </div>
           ))}
         </div>
