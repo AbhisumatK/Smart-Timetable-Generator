@@ -1,7 +1,11 @@
+import { useTheme } from "../context/ThemeContext";
+
 const STEPS = [
 	"Start", "Time Slots", "Subjects", "Labs", "Classrooms", "Review"
 ];
 export default function Stepper({ step }) {
+	const { isDark } = useTheme();
+	
 	return (
 		<div className="w-full mb-8">
 			<ol className="flex justify-between items-center w-full">
@@ -12,9 +16,11 @@ export default function Stepper({ step }) {
 						<li key={i} className="flex flex-col items-center relative flex-1">
 							{/* Connection line */}
 							{i < STEPS.length - 1 && (
-								<div className="absolute top-6 left-1/2 w-full h-0.5 bg-slate-600/30 -translate-y-1/2 z-0">
+								<div className={`absolute top-6 left-1/2 w-full h-0.5 -translate-y-1/2 z-0 ${
+									isDark ? "bg-slate-600/30" : "bg-slate-400/40"
+								}`}>
 									<div className={`h-full transition-all duration-300 ${
-										isCompleted ? 'bg-cyan-500' : 'bg-slate-600/30'
+										isCompleted ? 'bg-cyan-500' : (isDark ? 'bg-slate-600/30' : 'bg-slate-400/40')
 									}`} style={{ width: isCompleted ? '100%' : '0%' }}></div>
 								</div>
 							)}
@@ -23,10 +29,16 @@ export default function Stepper({ step }) {
 							<div
 								className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${
 									isActive
-										? "border-cyan-500 bg-cyan-600/20 text-cyan-400 shadow-lg shadow-cyan-500/20"
+										? isDark
+											? "border-cyan-500 bg-cyan-600/20 text-cyan-400 shadow-lg shadow-cyan-500/20"
+											: "border-cyan-600 bg-cyan-500/20 text-cyan-700 shadow-lg shadow-cyan-500/30"
 										: isCompleted
-										? "border-cyan-500 bg-cyan-500 text-white"
-										: "border-slate-600/50 bg-slate-800/50 text-slate-400"
+										? isDark
+											? "border-cyan-500 bg-cyan-500 text-white"
+											: "border-cyan-600 bg-cyan-600 text-white"
+										: isDark
+											? "border-slate-600/50 bg-slate-800/50 text-slate-400"
+											: "border-slate-400/60 bg-slate-200/80 text-slate-600"
 								}`}
 							>
 								{isCompleted ? (
@@ -42,10 +54,16 @@ export default function Stepper({ step }) {
 							<div className="mt-3 text-center">
 								<span className={`text-xs sm:text-sm font-medium transition-colors ${
 									isActive
-										? "text-cyan-400"
+										? isDark
+											? "text-cyan-400"
+											: "text-cyan-700"
 										: isCompleted
-										? "text-cyan-300"
-										: "text-slate-500"
+										? isDark
+											? "text-cyan-300"
+											: "text-cyan-600"
+										: isDark
+											? "text-slate-500"
+											: "text-slate-600"
 								}`}>
 									{title}
 								</span>

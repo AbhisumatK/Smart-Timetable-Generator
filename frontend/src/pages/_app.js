@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 import { SchedulerProvider } from '../context/SchedulerContext'
+import { ThemeProvider } from '../context/ThemeContext'
 import { SessionProvider } from "next-auth/react";
 import { getSession, signIn, signOut } from "next-auth/react";
 import { useEffect } from "react";
@@ -14,9 +15,11 @@ export default function App({ Component, pageProps }) {
 
   return (
     <SessionProvider session={pageProps.session}>
-      <SchedulerProvider>
-        <Component {...pageProps} />
-      </SchedulerProvider>
+      <ThemeProvider>
+        <SchedulerProvider>
+          <Component {...pageProps} />
+        </SchedulerProvider>
+      </ThemeProvider>
     </SessionProvider>
   )
 }

@@ -1,4 +1,5 @@
 import { useScheduler } from "../context/SchedulerContext";
+import { useTheme } from "../context/ThemeContext";
 import Stepper from "../components/Stepper";
 import Navbar from "../components/Navbar";
 import { useRouter } from "next/router";
@@ -6,6 +7,7 @@ import { useState } from "react";
 
 export default function LabsPage() {
   const { labs, setLabs, timeSlots } = useScheduler();
+  const { isDark } = useTheme();
   const [error, setError] = useState("");
   const router = useRouter();
   const [labName, setLabName] = useState("");
@@ -38,12 +40,19 @@ export default function LabsPage() {
   return (
     <>
       <Navbar />
-      <Stepper step={4} />
+      {/* Add padding above the Stepper */}
+      <div className="pt-8">
+        <Stepper step={4} />
+      </div>
       <div className="container max-w-3xl mx-auto mt-8 p-6">
         <div className="card p-6 space-y-6">
           <div>
-            <h2 className="text-xl font-semibold text-slate-100 mb-2">Add Lab Class</h2>
-            <p className="text-slate-400 text-sm">Provide a lab name, number of consecutive classes, and optionally a preferred time slot.</p>
+            <h2 className={`text-xl font-semibold mb-2 ${
+              isDark ? "text-slate-100" : "text-slate-800"
+            }`}>Add Lab Class</h2>
+            <p className={`text-sm ${
+              isDark ? "text-slate-400" : "text-slate-600"
+            }`}>Provide a lab name, number of consecutive classes, and optionally a preferred time slot.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -78,38 +87,50 @@ export default function LabsPage() {
                 />
                 <button
                   type="button"
-                  className="group card-compact flex items-center justify-center px-3 py-2 border border-slate-600/50 rounded-lg text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50 hover:bg-cyan-500/10 hover:border-cyan-500/40 hover:text-slate-100"
+                  className={`group card-compact flex items-center justify-center px-3 py-2 border rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50 hover:bg-cyan-500/10 hover:border-cyan-500/40 ${
+                    isDark 
+                      ? "border-slate-600/50 text-slate-300 hover:text-slate-100" 
+                      : "border-slate-400/50 text-slate-700 hover:text-slate-900"
+                  }`}
                   aria-label="Open time scroller"
                   aria-expanded={showPicker}
                   onClick={() => setShowPicker(v => !v)}
                 >
-                  <svg className="h-5 w-5 text-inherit group-hover:text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                  <svg className={`h-5 w-5 text-inherit ${isDark ? "group-hover:text-cyan-300" : "group-hover:text-cyan-600"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
                   </svg>
                 </button>
               </div>
               {showPicker && (
-                <div className="absolute z-20 mt-2 w-full md:w-[28rem] rounded-xl border border-slate-700/60 bg-slate-900/95 backdrop-blur p-4 shadow-xl">
+                <div className={`absolute z-20 mt-2 w-full md:w-[28rem] rounded-xl border backdrop-blur p-4 shadow-xl ${
+                  isDark 
+                    ? "border-slate-700/60 bg-slate-900/95" 
+                    : "border-slate-300/60 bg-white/95"
+                }`}>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className="text-slate-300 mb-2 font-semibold">Start</div>
+                      <div className={`mb-2 font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}>Start</div>
                       <div className="grid grid-cols-2 gap-3">
-                        <ScrollColumn options={hours} value={startHour} onChange={setStartHour} ariaLabel="Start hour" />
-                        <ScrollColumn options={minutes} value={startMinute} onChange={setStartMinute} ariaLabel="Start minute" />
+                        <ScrollColumn options={hours} value={startHour} onChange={setStartHour} ariaLabel="Start hour" isDark={isDark} />
+                        <ScrollColumn options={minutes} value={startMinute} onChange={setStartMinute} ariaLabel="Start minute" isDark={isDark} />
                       </div>
                     </div>
                     <div>
-                      <div className="text-slate-300 mb-2 font-semibold">End</div>
+                      <div className={`mb-2 font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}>End</div>
                       <div className="grid grid-cols-2 gap-3">
-                        <ScrollColumn options={hours} value={endHour} onChange={setEndHour} ariaLabel="End hour" />
-                        <ScrollColumn options={minutes} value={endMinute} onChange={setEndMinute} ariaLabel="End minute" />
+                        <ScrollColumn options={hours} value={endHour} onChange={setEndHour} ariaLabel="End hour" isDark={isDark} />
+                        <ScrollColumn options={minutes} value={endMinute} onChange={setEndMinute} ariaLabel="End minute" isDark={isDark} />
                       </div>
                     </div>
                   </div>
                   <div className="mt-4 flex items-center justify-end gap-2">
                     <button
                       type="button"
-                      className="card-compact px-4 py-2 text-slate-300 hover:bg-slate-800/60 border border-slate-600/50 rounded-lg"
+                      className={`card-compact px-4 py-2 border rounded-lg ${
+                        isDark 
+                          ? "text-slate-300 hover:bg-slate-800/60 border-slate-600/50" 
+                          : "text-slate-700 hover:bg-slate-200/60 border-slate-400/50"
+                      }`}
                       onClick={() => setShowPicker(false)}
                     >
                       Cancel
@@ -148,20 +169,34 @@ export default function LabsPage() {
             
           </div>
 
-          {error && <div className="text-red-400 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm">{error}</div>}
+          {error && <div className={`p-3 border rounded-lg text-sm ${
+            isDark 
+              ? "text-red-400 bg-red-500/10 border-red-500/20" 
+              : "text-red-700 bg-red-500/20 border-red-500/40"
+          }`}>{error}</div>}
 
           {labs.length > 0 && (
             <div className="pt-4 border-t border-slate-700/50">
-              <h3 className="text-lg font-semibold text-slate-200 mb-3">Added Labs</h3>
+              <h3 className={`text-lg font-semibold mb-3 ${
+                isDark ? "text-slate-200" : "text-slate-800"
+              }`}>Added Labs</h3>
               <div className="space-y-2 max-h-64 overflow-auto">
                 {labs.map((l, i) => (
                   <div key={i} className="card-compact flex items-center justify-between">
-                    <div className="text-slate-200">
+                    <div className={isDark ? "text-slate-200" : "text-slate-800"}>
                       <div className="font-semibold">{l.name}</div>
-                      <div className="text-sm text-slate-400">{l.duration} classes</div>
-                      {l.preferred && <div className="text-xs text-slate-500 mt-1">Preferred: {l.preferred}</div>}
+                      <div className={`text-sm ${
+                        isDark ? "text-slate-400" : "text-slate-600"
+                      }`}>{l.duration} classes</div>
+                      {l.preferred && <div className={`text-xs mt-1 ${
+                        isDark ? "text-slate-500" : "text-slate-700"
+                      }`}>Preferred: {l.preferred}</div>}
                     </div>
-                    <button className="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-colors" onClick={() => removeLab(i)} aria-label={`Remove lab ${l.name}`}>
+                    <button className={`p-2 rounded-lg transition-colors ${
+                      isDark 
+                        ? "text-red-400 hover:text-red-300 hover:bg-red-500/10" 
+                        : "text-red-600 hover:text-red-700 hover:bg-red-500/20"
+                    }`} onClick={() => removeLab(i)} aria-label={`Remove lab ${l.name}`}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -192,9 +227,13 @@ export default function LabsPage() {
   );
 }
 
-function ScrollColumn({ options, value, onChange, ariaLabel }) {
+function ScrollColumn({ options, value, onChange, ariaLabel, isDark }) {
   return (
-    <div className="rounded-lg border border-slate-700/50 bg-slate-900/40 backdrop-blur p-2">
+    <div className={`rounded-lg border backdrop-blur p-2 ${
+      isDark 
+        ? "border-slate-700/50 bg-slate-900/40" 
+        : "border-slate-300/50 bg-slate-100/40"
+    }`}>
       <div className="h-40 overflow-y-auto snap-y snap-mandatory pr-1">
         <ul className="space-y-1">
           {options.map((opt) => {
@@ -204,7 +243,11 @@ function ScrollColumn({ options, value, onChange, ariaLabel }) {
                 <button
                   type="button"
                   aria-label={`${ariaLabel} ${opt}`}
-                  className={`w-full text-left px-3 py-2 rounded-md transition-colors ${selected ? "bg-cyan-600/30 text-slate-100 border border-cyan-500/30" : "text-slate-300 hover:bg-slate-800/60"}`}
+                  className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                    selected 
+                      ? `bg-cyan-600/30 border border-cyan-500/30 ${isDark ? "text-slate-100" : "text-slate-900"}` 
+                      : `${isDark ? "text-slate-300 hover:bg-slate-800/60" : "text-slate-700 hover:bg-slate-200/60"}`
+                  }`}
                   onClick={() => onChange(opt)}
                 >
                   {opt}

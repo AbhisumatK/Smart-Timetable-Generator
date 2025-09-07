@@ -6,6 +6,13 @@ export default function handler(req, res) {
   const index = timetables.findIndex(t => t.id === id);
   if (index === -1) return res.status(404).json({ error: "Timetable not found" });
 
+  if (req.method === "DELETE") {
+    // Remove the draft/timetable by id
+    timetables = timetables.filter(t => t.id !== id);
+    writeTimetables(timetables);
+    return res.status(200).json({ message: "Timetable deleted" });
+  }
+
   if (req.method === "PUT") {
     const { action, comments, approver } = req.body;
     if (!action || (action !== "approve" && action !== "reject")) {
