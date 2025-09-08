@@ -31,8 +31,9 @@ export default function ClassroomsPage() {
       <div className="pt-8">
         <Stepper step={5} />
       </div>
-      <div className="container max-w-xl mx-auto mt-8 p-6">
-        <div className="card p-6">
+      <div className="page-container">
+        <div className="content-wrapper">
+          <div className="card max-w-3xl mx-auto p-8">
           <InputList
             label="Enter Classroom Names"
             value={classrooms}
@@ -56,6 +57,7 @@ export default function ClassroomsPage() {
             >
               Generate Timetable
             </button>
+          </div>
           </div>
         </div>
       </div>

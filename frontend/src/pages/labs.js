@@ -45,16 +45,14 @@ export default function LabsPage() {
       <div className="pt-8">
         <Stepper step={4} />
       </div>
-      <div className="container max-w-3xl mx-auto mt-8 p-6">
-        <div className="card p-6 space-y-6">
-          <div>
-            <h2 className={`text-xl font-semibold mb-2 ${
-              isDark ? "text-slate-100" : "text-slate-800"
-            }`}>Add Lab Class</h2>
-            <p className={`text-sm ${
-              isDark ? "text-slate-400" : "text-slate-600"
-            }`}>Provide a lab name, number of consecutive classes, and optionally a preferred time slot.</p>
+      <div className="page-container">
+        <div className="content-wrapper">
+          <div className="text-center mb-8">
+            <h2 className="section-header">Add Lab Class</h2>
+            <p className="section-subtitle">Provide a lab name, number of consecutive classes, and optionally a preferred time slot.</p>
           </div>
+
+          <div className="card p-6 space-y-6">
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -223,6 +221,7 @@ export default function LabsPage() {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </>
   );
