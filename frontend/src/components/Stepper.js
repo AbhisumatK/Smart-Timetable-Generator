@@ -1,7 +1,7 @@
 import { useTheme } from "../context/ThemeContext";
 
 const STEPS = [
-	"Start", "Time Slots", "Subjects", "Labs", "Classrooms", "Review"
+	"Start", "Time Slots", "Subjects", "FixedClasses", "Labs", "Classrooms", "Review"
 ];
 export default function Stepper({ step }) {
 	const { isDark } = useTheme();

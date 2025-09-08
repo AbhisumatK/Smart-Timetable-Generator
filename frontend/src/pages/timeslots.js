@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 
+TimeSlotsPage.auth = true;
 export default function TimeSlotsPage() {
   const { timeSlots, setTimeSlots } = useScheduler();
   const { isDark } = useTheme();
@@ -40,7 +41,7 @@ export default function TimeSlotsPage() {
       <Navbar />
       {/* Padding above the Stepper */}
       <div className="pt-8">
-        <Stepper step={2} />
+        <Stepper step={1} />
       </div>
       <div className="page-container">
         <div className="content-wrapper">

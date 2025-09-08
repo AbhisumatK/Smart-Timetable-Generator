@@ -1,15 +1,18 @@
-import { useSession } from 'next-auth/react';
+import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import Link from 'next/link';
 
+Profile.auth = true;
 export default function Profile() {
-  const { data: session, status } = useSession();
+  const { user, isAuthenticated } = useAuth();
   const { isDark } = useTheme();
 
-  if (status === 'loading') {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
-        <div className={`card ${isDark ? "text-slate-300" : "text-slate-700"}`}>Loading...</div>
+        <div className={`card ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+          Please login to view your profile.
+        </div>
       </div>
     );
   }
@@ -26,47 +29,59 @@ export default function Profile() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative">
             <div className="flex items-center gap-4">
               <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-cyan-500/20">
-                {(session?.user?.name || session?.user?.email || '?').slice(0,1).toUpperCase()}
+                {(user?.name || user?.email || '?').slice(0,1).toUpperCase()}
               </div>
               <div>
-                <h1 className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${isDark ? "text-slate-100" : "text-slate-800"}`}>Your Profile</h1>
-                <p className={isDark ? "text-slate-400" : "text-slate-600"}>Manage your account information</p>
+                <h1 className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${isDark ? "text-slate-100" : "text-slate-800"}`}>
+                  Your Profile
+                </h1>
+                <p className={isDark ? "text-slate-400" : "text-slate-600"}>
+                  Manage your account information
+                </p>
               </div>
             </div>
-            <Link href="/" className={`btn-secondary px-4 py-2 ${isDark ? "border-slate-600/50" : "border-slate-400/50"}`}>Back to Home</Link>
+            <Link href="/" className={`btn-secondary px-4 py-2 ${isDark ? "border-slate-600/50" : "border-slate-400/50"}`}>
+              Back to Home
+            </Link>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card">
-            <h2 className={`text-lg font-semibold mb-4 ${isDark ? "text-slate-100" : "text-slate-800"}`}>Account Overview</h2>
-            {session ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="label">Name</div>
-                    <div className={isDark ? "text-slate-200" : "text-slate-700"}>{session.user?.name || '—'}</div>
-                  </div>
-                  <span className="badge">Active</span>
-                </div>
+            <h2 className={`text-lg font-semibold mb-4 ${isDark ? "text-slate-100" : "text-slate-800"}`}>
+              Account Overview
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <div className="label">Email</div>
-                  <div className={`break-all ${isDark ? "text-slate-200" : "text-slate-700"}`}>{session.user?.email || '—'}</div>
-                </div>
-                {session.user?.role && (
-                  <div>
-                    <div className="label">Role</div>
-                    <div className={`capitalize ${isDark ? "text-slate-200" : "text-slate-700"}`}>{session.user.role}</div>
+                  <div className="label">Name</div>
+                  <div className={isDark ? "text-slate-200" : "text-slate-700"}>
+                    {user?.name || '—'}
                   </div>
-                )}
+                </div>
+                <span className="badge">Active</span>
               </div>
-            ) : (
-              <div className={isDark ? "text-slate-300" : "text-slate-600"}>You are not signed in.</div>
-            )}
+              <div>
+                <div className="label">Email</div>
+                <div className={`break-all ${isDark ? "text-slate-200" : "text-slate-700"}`}>
+                  {user?.email || '—'}
+                </div>
+              </div>
+              {user?.role && (
+                <div>
+                  <div className="label">Role</div>
+                  <div className={`capitalize ${isDark ? "text-slate-200" : "text-slate-700"}`}>
+                    {user.role}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="card">
-            <h2 className={`text-lg font-semibold mb-4 ${isDark ? "text-slate-100" : "text-slate-800"}`}>Security</h2>
+            <h2 className={`text-lg font-semibold mb-4 ${isDark ? "text-slate-100" : "text-slate-800"}`}>
+              Security
+            </h2>
             <ul className={`space-y-3 text-sm ${isDark ? "text-slate-300" : "text-slate-700"}`}>
               <li className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-2">
@@ -104,5 +119,3 @@ export default function Profile() {
     </div>
   );
 }
-
-

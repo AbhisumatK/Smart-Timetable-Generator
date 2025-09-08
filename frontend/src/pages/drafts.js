@@ -1,20 +1,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useScheduler } from "../context/SchedulerContext";
 import TimetableTable from "../components/TimetableTable";
 
+DraftsPage.auth = true;
 export default function DraftsPage() {
   const router = useRouter();
-  const { currentUser } = useScheduler();
   const [drafts, setDrafts] = useState([]);
   const [expandedDrafts, setExpandedDrafts] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!currentUser) return;
-
-    async function fetchDrafts() {
+      async function fetchDrafts() {
       setLoading(true);
       setError(null);
       try {
@@ -28,9 +25,8 @@ export default function DraftsPage() {
         setLoading(false);
       }
     }
-
     fetchDrafts();
-  }, [currentUser]);
+  }, []);
 
   async function submitForApproval(id) {
     try {
@@ -57,14 +53,6 @@ export default function DraftsPage() {
       }
       return newSet;
     });
-  }
-
-  if (!currentUser) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 text-center text-gray-500">
-        Please log in to view your drafts.
-      </div>
-    );
   }
 
   if (loading) {

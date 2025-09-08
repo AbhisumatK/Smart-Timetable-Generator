@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+LabsPage.auth = true;
 export default function LabsPage() {
   const { labs, setLabs, timeSlots } = useScheduler();
   const { isDark } = useTheme();
@@ -210,7 +211,7 @@ export default function LabsPage() {
           <div className="flex justify-between">
             <button 
               className="inline-flex items-center justify-center rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white font-semibold px-4 py-2 transition-colors" 
-              onClick={() => router.push("/subjects")}
+              onClick={() => router.push("/fixedClasses")}
             >
               Back
             </button>

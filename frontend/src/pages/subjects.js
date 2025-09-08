@@ -7,6 +7,7 @@ import { useState } from "react";
 import Link from "next/link";
 import InputList from "../components/InputList";
 
+SubjectsPage.auth = true;
 export default function SubjectsPage() {
   const { subjects, setSubjects, facultyAssignments, setFacultyAssignments } = useScheduler();
   const { isDark } = useTheme();
@@ -57,7 +58,7 @@ export default function SubjectsPage() {
       <Navbar />
       {/* Padding above the Stepper */}
       <div className="pt-8">
-        <Stepper step={3} />
+        <Stepper step={2} />
       </div>
       <div className="page-container">
         <div className="content-wrapper">
@@ -152,7 +153,7 @@ export default function SubjectsPage() {
               <button
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={subjects.length === 0}
-                onClick={() => router.push("/labs")}
+                onClick={() => router.push("/fixedClasses")}
               >
                 Next
               </button>
