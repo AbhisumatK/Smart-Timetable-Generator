@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useScheduler } from "../context/SchedulerContext";
+import { useTheme } from "../context/ThemeContext";
 import Stepper from "../components/Stepper";
 import Navbar from "../components/Navbar";
 import { useRouter } from "next/router";
@@ -9,6 +10,7 @@ const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 FixedClassesPage.auth = true;
 export default function FixedClassesPage() {
   const { fixedClasses, setFixedClasses, classrooms, timeSlots } = useScheduler();
+  const { isDark } = useTheme();
   const [day, setDay] = useState("");
   const [time, setTime] = useState("");
   const [room, setRoom] = useState("");
@@ -41,101 +43,128 @@ export default function FixedClassesPage() {
   return (
     <>
       <Navbar />
-      <Stepper step={3} />
-      <div className="max-w-xl mx-auto mt-8 p-6 bg-white rounded shadow">
-        <h2 className="text-xl font-semibold mb-4">Fixed Classes / Events</h2>
-        {error && <p className="text-red-600 mb-2">{error}</p>}
-        <div className="space-y-3 mb-4">
-          <div>
-            <label>Day:</label>
-            <input
-              list="days-list"
-              value={day}
-              onChange={(e) => setDay(e.target.value)}
-              className="ml-2 p-1 border rounded"
-              placeholder="Select or type day"
-            />
+      {/* Padding above the Stepper */}
+      <div className="pt-8">
+        <Stepper step={3} />
+      </div>
+      <div className="page-container">
+        <div className="content-wrapper">
+          <div className="text-center mb-8">
+            <h2 className="section-header">Fixed Classes / Events</h2>
+            <p className="section-subtitle">Lock specific sessions to a day, time and room</p>
           </div>
 
-          <div>
-            <label>Time Slot:</label>
-            <input
-              list="timeslots-list"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="ml-2 p-1 border rounded"
-              placeholder="Select or type time slot"
-            />
+          <div className={`card max-w-2xl mx-auto ${isDark ? "text-slate-200" : "text-slate-800"}`}>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={`label ${isDark ? "text-cyan-200" : "text-cyan-800"}`}>Day</label>
+                  <input
+                    list="days-list"
+                    value={day}
+                    onChange={(e) => setDay(e.target.value)}
+                    className="input"
+                    placeholder="Select or type day"
+                  />
+                  <datalist id="days-list">
+                    {daysOfWeek.map((d) => (
+                      <option key={d} value={d} />
+                    ))}
+                  </datalist>
+                </div>
+                <div>
+                  <label className={`label ${isDark ? "text-cyan-200" : "text-cyan-800"}`}>Time Slot</label>
+                  <input
+                    list="timeslots-list"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    className="input"
+                    placeholder="Select or type time slot"
+                  />
+                  <datalist id="timeslots-list">
+                    {(timeSlots || []).map((ts, i) => (
+                      <option key={i} value={ts} />
+                    ))}
+                  </datalist>
+                </div>
+                <div>
+                  <label className={`label ${isDark ? "text-cyan-200" : "text-cyan-800"}`}>Room</label>
+                  <input
+                    list="rooms-list"
+                    value={room}
+                    onChange={(e) => setRoom(e.target.value)}
+                    className="input"
+                    placeholder="Select or type room"
+                  />
+                  <datalist id="rooms-list">
+                    {(classrooms || []).map((r, i) => (
+                      <option key={i} value={r} />
+                    ))}
+                  </datalist>
+                </div>
+                <div>
+                  <label className={`label ${isDark ? "text-cyan-200" : "text-cyan-800"}`}>Subject / Event Name</label>
+                  <input
+                    type="text"
+                    value={subject}
+                    onChange={e => setSubject(e.target.value)}
+                    placeholder="e.g., Seminar on AI"
+                    className="input"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={`label ${isDark ? "text-cyan-200" : "text-cyan-800"}`}>Faculty (optional)</label>
+                <input
+                  type="text"
+                  value={faculty}
+                  onChange={e => setFaculty(e.target.value)}
+                  placeholder="e.g., Prof. Smith"
+                  className="input"
+                />
+              </div>
+
+              <button onClick={addFixedClass} className="btn-primary w-full">
+                Add Fixed Class
+              </button>
+              {error && (
+                <div className="text-red-400 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm">{error}</div>
+              )}
+            </div>
+
+            {fixedClasses.length > 0 && (
+              <div className={`mt-8 pt-6 border-t ${isDark ? "border-slate-700/50" : "border-slate-300/50"}`}>
+                <h3 className={`text-lg font-semibold mb-4 ${isDark ? "text-slate-200" : "text-slate-800"}`}>Existing Fixed Classes</h3>
+                <ul className="space-y-3 max-h-64 overflow-auto">
+                  {fixedClasses.map((fc, idx) => (
+                    <li key={idx} className="card-compact flex justify-between items-start">
+                      <span className={isDark ? "text-slate-200" : "text-slate-800"}>
+                        <strong>{fc.subject}</strong> on {fc.day} at {fc.time} in {fc.room}
+                        {fc.faculty && `, Faculty: ${fc.faculty}`}
+                      </span>
+                      <button
+                        className="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-colors"
+                        onClick={() => removeFixedClass(idx)}
+                        aria-label={`Remove fixed class ${fc.subject}`}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className={`flex justify-between mt-8 pt-6 border-t ${isDark ? "border-slate-700/50" : "border-slate-300/50"}`}>
+              <button className="btn-secondary" onClick={() => router.push("/subjects")}>
+                Back
+              </button>
+              <button className="btn-primary" onClick={() => router.push("/labs")}>
+                Next
+              </button>
+            </div>
           </div>
-
-          <div>
-            <label>Room:</label>
-            <input
-              list="rooms-list"
-              value={room}
-              onChange={(e) => setRoom(e.target.value)}
-              className="ml-2 p-1 border rounded"
-              placeholder="Select or type room"
-            />
-          </div>
-
-          <div>
-            <label>Subject / Event Name:</label>
-            <input
-              type="text"
-              value={subject}
-              onChange={e => setSubject(e.target.value)}
-              placeholder="e.g. Seminar on AI"
-              className="w-full mt-1 p-2 border rounded"
-            />
-          </div>
-
-          <div>
-            <label>Faculty (optional):</label>
-            <input
-              type="text"
-              value={faculty}
-              onChange={e => setFaculty(e.target.value)}
-              placeholder="e.g. Prof. Smith"
-              className="w-full mt-1 p-2 border rounded"
-            />
-          </div>
-
-          <button onClick={addFixedClass} className="bg-blue-600 text-white px-4 py-2 rounded mt-3">
-            Add Fixed Class
-          </button>
-        </div>
-
-        {fixedClasses.length > 0 && (
-          <>
-            <h3 className="mb-3 font-semibold">Existing Fixed Classes</h3>
-            <ul className="space-y-2 max-h-64 overflow-auto">
-              {fixedClasses.map((fc, idx) => (
-                <li key={idx} className="flex justify-between bg-gray-100 p-2 rounded">
-                  <span>
-                    <strong>{fc.subject}</strong> on {fc.day} at {fc.time} in {fc.room}
-                    {fc.faculty && `, Faculty: ${fc.faculty}`}
-                  </span>
-                  <button
-                    className="text-red-600 hover:text-red-800"
-                    onClick={() => removeFixedClass(idx)}
-                    aria-label={`Remove fixed class ${fc.subject}`}
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-
-        <div className="flex justify-between mt-6">
-          <button className="bg-gray-300 px-4 py-2 rounded" onClick={() => router.push("/subjects")}>
-            Back
-          </button>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => router.push("/labs")}>
-            Next
-          </button>
         </div>
       </div>
     </>
