@@ -12,28 +12,34 @@ export default function FixedClassesPage() {
   const { fixedClasses, setFixedClasses, classrooms, timeSlots } = useScheduler();
   const { isDark } = useTheme();
   const [day, setDay] = useState("");
-  const [time, setTime] = useState("");
   const [room, setRoom] = useState("");
   const [subject, setSubject] = useState("");
   const [faculty, setFaculty] = useState("");
+  const [selectedTimes, setSelectedTimes] = useState([]);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  function toggleTimeSlot(ts) {
+    setSelectedTimes((prev) => (prev.includes(ts) ? prev.filter(t => t !== ts) : [...prev, ts]));
+  }
 
   function addFixedClass() {
     if (!subject.trim()) {
       setError("Subject/Event name is required");
       return;
     }
-    if (!day || !time || !room) {
-      setError("Day, Time, and Room must be selected");
+    if (!day || selectedTimes.length === 0 || !room) {
+      setError("Select day, at least one time slot, and room");
       return;
     }
     setError("");
-    const newEntry = { day, time, room, subject: subject.trim(), faculty: faculty.trim() };
-    setFixedClasses([...fixedClasses, newEntry]);
+    const base = { day, room, subject: subject.trim(), faculty: faculty.trim() };
+    const entries = selectedTimes.map((t) => ({ ...base, time: t }));
+    setFixedClasses([...fixedClasses, ...entries]);
     // Reset inputs if desired
     setSubject("");
     setFaculty("");
+    setSelectedTimes([]);
   }
 
   function removeFixedClass(index) {
@@ -73,21 +79,6 @@ export default function FixedClassesPage() {
                   </datalist>
                 </div>
                 <div>
-                  <label className={`label ${isDark ? "text-cyan-200" : "text-cyan-800"}`}>Time Slot</label>
-                  <input
-                    list="timeslots-list"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="input"
-                    placeholder="Select or type time slot"
-                  />
-                  <datalist id="timeslots-list">
-                    {(timeSlots || []).map((ts, i) => (
-                      <option key={i} value={ts} />
-                    ))}
-                  </datalist>
-                </div>
-                <div>
                   <label className={`label ${isDark ? "text-cyan-200" : "text-cyan-800"}`}>Room</label>
                   <input
                     list="rooms-list"
@@ -96,13 +87,8 @@ export default function FixedClassesPage() {
                     className="input"
                     placeholder="Select or type room"
                   />
-                  <datalist id="rooms-list">
-                    {(classrooms || []).map((r, i) => (
-                      <option key={i} value={r} />
-                    ))}
-                  </datalist>
                 </div>
-                <div>
+                <div className="md:col-span-2">
                   <label className={`label ${isDark ? "text-cyan-200" : "text-cyan-800"}`}>Subject / Event Name</label>
                   <input
                     type="text"
@@ -112,6 +98,37 @@ export default function FixedClassesPage() {
                     className="input"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className={`label ${isDark ? "text-cyan-200" : "text-cyan-800"}`}>Time Slots (select one or more)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {(timeSlots || []).map((ts) => {
+                    const active = selectedTimes.includes(ts);
+                    return (
+                      <button
+                        key={ts}
+                        type="button"
+                        onClick={() => toggleTimeSlot(ts)}
+                        className={`px-3 py-2 rounded-md border text-sm transition-colors ${
+                          active
+                            ? "border-cyan-500 bg-cyan-500/20 text-cyan-200"
+                            : isDark
+                              ? "border-slate-600/50 text-slate-300 hover:bg-slate-800/60"
+                              : "border-slate-400/50 text-slate-700 hover:bg-slate-200/60"
+                        }`}
+                        aria-pressed={active}
+                      >
+                        {ts}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedTimes.length > 0 && (
+                  <div className={`mt-2 text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+                    Selected: {selectedTimes.join(", ")}
+                  </div>
+                )}
               </div>
 
               <div>

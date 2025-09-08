@@ -3,7 +3,7 @@ import { useTheme } from "../context/ThemeContext";
 import Stepper from "../components/Stepper";
 import Navbar from "../components/Navbar";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 LabsPage.auth = true;
 export default function LabsPage() {
@@ -14,23 +14,20 @@ export default function LabsPage() {
   const [labName, setLabName] = useState("");
   const [labDuration, setLabDuration] = useState("");
   const [labPreferred, setLabPreferred] = useState("");
-  const [showPicker, setShowPicker] = useState(false);
-  const [startHour, setStartHour] = useState("09");
-  const [startMinute, setStartMinute] = useState("00");
-  const [endHour, setEndHour] = useState("10");
-  const [endMinute, setEndMinute] = useState("00");
-  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
-  const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+  const [labRoom, setLabRoom] = useState("");
 
-  function addLab(entry) {
-    const [name, durationRaw, slot] = entry.split(",").map(e => (e || '').trim());
-    const duration = parseInt(durationRaw);
-    if (!name || !duration || duration < 1 || duration > timeSlots.length) {
-      setError("Format: LabName,Duration,[OptionalSlot]");
+  const preferredStartOptions = useMemo(() => {
+    if (!Array.isArray(timeSlots)) return [];
+    return Array.from(new Set(timeSlots.map((s) => (typeof s === "string" && s.includes("-") ? s.split("-")[0] : s))));
+  }, [timeSlots]);
+
+  function addLabEntry({ name, duration, preferred, room }) {
+    if (!name || !duration || duration < 1 || duration > (timeSlots?.length || 0)) {
+      setError("Provide lab name and valid number of consecutive classes.");
       return false;
     }
     setError("");
-    setLabs([...labs, { name, duration, preferred: slot || null }]);
+    setLabs([...labs, { name, duration, preferred: preferred || null, room: room || "" }]);
     return true;
   }
 
@@ -49,12 +46,12 @@ export default function LabsPage() {
         <div className="content-wrapper">
           <div className="text-center mb-8">
             <h2 className="section-header">Add Lab Class</h2>
-            <p className="section-subtitle">Provide a lab name, number of consecutive classes, and optionally a preferred time slot.</p>
+            <p className="section-subtitle">Provide a lab name, number of consecutive classes, optional preferred start time (from your slots), and the lab classroom.</p>
           </div>
 
           <div className="card p-6 space-y-6">
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="label">Lab name</label>
               <input
@@ -75,79 +72,18 @@ export default function LabsPage() {
                 onChange={(e) => setLabDuration(e.target.value)}
               />
             </div>
-            <div className="relative">
-              <label className="label">Preferred time (optional)</label>
-              <div className="flex gap-2">
-                <input
-                  className="input"
-                  placeholder="e.g., 13:00-14:00"
-                  value={labPreferred}
-                  onChange={(e) => setLabPreferred(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className={`group card-compact flex items-center justify-center px-3 py-2 border rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50 hover:bg-cyan-500/10 hover:border-cyan-500/40 ${
-                    isDark 
-                      ? "border-slate-600/50 text-slate-300 hover:text-slate-100" 
-                      : "border-slate-400/50 text-slate-700 hover:text-slate-900"
-                  }`}
-                  aria-label="Open time scroller"
-                  aria-expanded={showPicker}
-                  onClick={() => setShowPicker(v => !v)}
-                >
-                  <svg className={`h-5 w-5 text-inherit ${isDark ? "group-hover:text-cyan-300" : "group-hover:text-cyan-600"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
-                  </svg>
-                </button>
-              </div>
-              {showPicker && (
-                <div className={`absolute z-20 mt-2 w-full md:w-[28rem] rounded-xl border backdrop-blur p-4 shadow-xl ${
-                  isDark 
-                    ? "border-slate-700/60 bg-slate-900/95" 
-                    : "border-slate-300/60 bg-white/95"
-                }`}>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className={`mb-2 font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}>Start</div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <ScrollColumn options={hours} value={startHour} onChange={setStartHour} ariaLabel="Start hour" isDark={isDark} />
-                        <ScrollColumn options={minutes} value={startMinute} onChange={setStartMinute} ariaLabel="Start minute" isDark={isDark} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className={`mb-2 font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}>End</div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <ScrollColumn options={hours} value={endHour} onChange={setEndHour} ariaLabel="End hour" isDark={isDark} />
-                        <ScrollColumn options={minutes} value={endMinute} onChange={setEndMinute} ariaLabel="End minute" isDark={isDark} />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      className={`card-compact px-4 py-2 border rounded-lg ${
-                        isDark 
-                          ? "text-slate-300 hover:bg-slate-800/60 border-slate-600/50" 
-                          : "text-slate-700 hover:bg-slate-200/60 border-slate-400/50"
-                      }`}
-                      onClick={() => setShowPicker(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      onClick={() => {
-                        const slot = `${startHour}:${startMinute}-${endHour}:${endMinute}`;
-                        setLabPreferred(slot);
-                        setShowPicker(false);
-                      }}
-                    >
-                      Insert time
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div>
+              <label className="label">Classroom</label>
+              <input className="input" placeholder="e.g., Lab A318" value={labRoom} onChange={(e)=>setLabRoom(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Preferred start (optional)</label>
+              <select className="input" value={labPreferred} onChange={(e)=>setLabPreferred(e.target.value)}>
+                <option value="">No preference</option>
+                {preferredStartOptions.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -155,11 +91,12 @@ export default function LabsPage() {
             <button
               className="btn-primary"
               onClick={() => {
-                const entry = `${(labName || '').trim()},${String(labDuration || '').trim()}${labPreferred ? `,${labPreferred}` : ''}`;
-                if (addLab(entry)) {
+                const ok = addLabEntry({ name: (labName || '').trim(), duration: parseInt(labDuration), preferred: (labPreferred || '').trim(), room: (labRoom || '').trim() });
+                if (ok) {
                   setLabName("");
                   setLabDuration("");
                   setLabPreferred("");
+                  setLabRoom("");
                 }
               }}
             >
@@ -186,10 +123,10 @@ export default function LabsPage() {
                       <div className="font-semibold">{l.name}</div>
                       <div className={`text-sm ${
                         isDark ? "text-slate-400" : "text-slate-600"
-                      }`}>{l.duration} classes</div>
+                      }`}>{l.duration} classes{l.room ? ` · Room ${l.room}` : ''}</div>
                       {l.preferred && <div className={`text-xs mt-1 ${
                         isDark ? "text-slate-500" : "text-slate-700"
-                      }`}>Preferred: {l.preferred}</div>}
+                      }`}>Preferred start: {l.preferred}</div>}
                     </div>
                     <button className={`p-2 rounded-lg transition-colors ${
                       isDark 

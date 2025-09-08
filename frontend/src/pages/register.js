@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const { isDark } = useTheme();
   const router = useRouter();
+  const { register: registerUser } = useAuth();
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("staff");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,29 +28,12 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          name,
-          password,
-          role: "admin", // Set role explicitly as admin
-        }),
-      });
-
-      if (!res.ok) {
-        const { error: msg } = await res.json();
-        setError(msg || "Registration failed");
-        setLoading(false);
-        return;
-      }
-
-      // Registration success: redirect to login or dashboard
+      await registerUser(email, password, name, role);
       router.push("/sign-in");
     } catch (err) {
-      setError("An error occurred");
+      setError(err?.message || "Registration failed");
       setLoading(false);
+      return;
     }
   };
 
@@ -138,6 +124,22 @@ export default function Register() {
             </div>
 
             <div>
+              <label htmlFor="role" className="label">Role</label>
+              <select
+                id="role"
+                name="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className={`input ${isDark ? "text-slate-200 bg-slate-800/50" : "text-slate-700 bg-white"}`}
+                aria-label="Role"
+              >
+                <option value="staff">Staff</option>
+                <option value="approver">Approver</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            <div>
               <button
                 type="submit"
                 disabled={loading}
@@ -145,6 +147,10 @@ export default function Register() {
               >
                 {loading ? "Registering..." : "Register"}
               </button>
+            </div>
+
+            <div className="text-center text-sm text-slate-400">
+              Already have an account? <a href="/sign-in" className="text-cyan-400 hover:text-cyan-300">Sign in</a>
             </div>
           </form>
         </div>

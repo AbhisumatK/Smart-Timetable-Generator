@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../context/AuthContext';
+import Link from 'next/link';
 
 export default function SignIn() {
   const { login } = useAuth();
@@ -105,7 +106,7 @@ export default function SignIn() {
               <div className="flex items-center justify-between text-xs text-slate-400">
                 <span className="inline-flex items-center gap-1 badge">
                   <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                   Secure sign-in
                 </span>
@@ -139,6 +140,11 @@ export default function SignIn() {
                   'Sign in'
                 )}
               </button>
+            </div>
+
+            <div className="text-center text-sm text-slate-400">
+              Don't have an account?{' '}
+              <Link href="/register" className="text-cyan-400 hover:text-cyan-300">Register</Link>
             </div>
           </form>
         </div>

@@ -1,65 +1,149 @@
 import { Groq } from 'groq-sdk';
 
-const groq = new Groq({ apiKey: "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" });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end("Method Not Allowed");
 
-  const { classrooms, timeSlots, labs, subjects, facultyAvailability, fixedClasses } = req.body;
+  const { classrooms, timeSlots, labs, subjects, facultyAvailability, fixedClasses, lunchSlot } = req.body;
   console.log(req.body);
+
+  function normalizeLunch(timetable) {
+    try {
+      if (!timetable || !Array.isArray(timeSlots) || !timeSlots.length || !lunchSlot || !timeSlots.includes(lunchSlot)) {
+        return timetable;
+      }
+      const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+      const normalized = {};
+      for (const day of days) {
+        const dayMap = { ...(timetable?.[day] || {}) };
+        // Remove any stray LUNCH entries in non-lunch slots
+        for (const slotKey of Object.keys(dayMap)) {
+          if (slotKey !== lunchSlot && dayMap[slotKey] && dayMap[slotKey].LUNCH) {
+            const { LUNCH, ...rest } = dayMap[slotKey];
+            dayMap[slotKey] = rest;
+          }
+        }
+        // Collect existing classes in lunch slot to relocate
+        const lunchCell = dayMap[lunchSlot];
+        const toMove = [];
+        if (lunchCell && typeof lunchCell === 'object') {
+          for (const [room, info] of Object.entries(lunchCell)) {
+            if (room === 'LUNCH') continue;
+            toMove.push([room, info]);
+          }
+        }
+        // Ensure lunch slot is properly marked
+        dayMap[lunchSlot] = { LUNCH: { subject: "Lunch Break", faculty: "" } };
+        // Relocate moved classes to nearest available slot on same day
+        if (toMove.length) {
+          const lunchIdx = timeSlots.indexOf(lunchSlot);
+          const order = [];
+          for (let i = lunchIdx + 1; i < timeSlots.length; i++) order.push(timeSlots[i]);
+          for (let i = lunchIdx - 1; i >= 0; i--) order.push(timeSlots[i]);
+          for (const [room, info] of toMove) {
+            let placed = false;
+            for (const target of order) {
+              if (target === lunchSlot) continue;
+              const cell = dayMap[target] || {};
+              if (!cell[room]) {
+                cell[room] = info;
+                dayMap[target] = cell;
+                placed = true;
+                break;
+              }
+            }
+            // If not placed anywhere, drop it (last resort)
+          }
+        }
+        normalized[day] = dayMap;
+      }
+      return normalized;
+    } catch {
+      return timetable;
+    }
+  }
 
   // Construct prompt with inputs (example)
   const prompt = `
-    You are an expert and smart academic timetable scheduler AI.
-    Using the inputs provided:
+    You are an expert academic timetable scheduler AI. Build valid, display-ready timetables that STRICTLY follow the inputs.
 
-    - Classrooms available: ${classrooms.map(s => `${s.name}`).join(", ")}
-    - Weekly Monday to Friday time slots: ${timeSlots.join(", ")}
-    - Subjects with their duration in a single day and preferred time-slot (STRICTLY FOLLOWED AND SHOULD NOT EXCEED): ${labs.map(l => `Name: ${l.name}; Duration: ${l.duration}; Preferred Timeslot: ${l.preferred}`).join("; ")}
-    - Subjects with their required number of weekly classes (STRICTLY FOLLOWED AND SHOULD NOT EXCEED): ${subjects.map(s => `${s.name}: ${s.weekly}`).join("; ")}
-    - Faculty availability mapped to subjects: ${JSON.stringify(facultyAvailability)}
-    - Fixed classes with assigned subject, time, day, room, and faculty: ${JSON.stringify(fixedClasses)}
+    INPUTS:
+    - Classrooms (use exactly these as room keys; do not invent): [${classrooms.map(s => s.name).join(", ")}]
+    - Ordered time slots for Monday–Friday (use EXACTLY as keys; do not invent/modify): [${timeSlots.join(", ")}]
+    - Lab subjects (schedule once per week; duration is consecutive count of provided slots; preferred slot indicates preferred start or period to place if possible; if a room is provided, that room MUST be used): ${labs.map(l => `{name:"${l.name}", duration:"${l.duration}", preferred:"${l.preferred || ""}", room:"${l.room || ""}"}`).join(", ")}
+    - Theory subjects with required weekly classes (must match exactly; do not exceed): ${subjects.map(s => `{name:"${s.name}", weekly:${s.weekly}}`).join(", ")}
+    - Faculty availability map (subject -> allowed faculty and their available days/slots): ${JSON.stringify(facultyAvailability)}
+    - Fixed classes (immutable; must appear exactly as specified): ${JSON.stringify(fixedClasses)}
+    - Lunch slot (if provided, block this slot on all days with a LUNCH marker and no classes): ${JSON.stringify(lunchSlot)}
 
-    Generate **3 DIFFERENT and OPTIMIZED timetable options** as JSON objects, covering Monday through Friday.
+    HARD RULES (MUST FOLLOW):
+    1) TIME FORMAT AND KEYS:
+       - Use the provided timeSlots VERBATIM as the only keys for time on each day.
+       - Do NOT change formatting; keep strictly as HH:MM-HH:MM (e.g., 09:00-10:00) exactly as given.
+       - Do NOT add, merge, split, or invent any time slots.
+    2) DAYS:
+       - Include exactly these days as top-level keys: Monday, Tuesday, Wednesday, Thursday, Friday.
+       - Each day may include ONLY NON-EMPTY timeSlots (omit empty ones entirely) EXCEPT the lunchSlot which must be present if provided.
+    3) ROOMS:
+       - Inside each time slot, keys must be classroom names from the provided classrooms or the special key "LUNCH" only.
+       - Do NOT create unknown rooms.
+       - If a lab specifies a room, schedule that lab ONLY in that exact room.
+    4) LUNCH:
+       - If lunchSlot is provided, mark that slot on ALL days with a single entry: "LUNCH": { "subject": "Lunch Break", "faculty": "" } and schedule no classes in that slot.
+       - If lunchSlot is not provided, do NOT invent any lunch period.
+    5) LABS:
+       - Each lab listed must be scheduled EXACTLY ONCE per week.
+       - Labs must occupy consecutive timeSlots on the SAME day according to their duration (duration is number of slots; if given in hours, map to the equivalent number of adjacent slots).
+       - Do NOT split a lab across non-consecutive slots or days.
+       - Try to honor preferred when possible without violating constraints.
+       - If a lab has a specified room (e.g., a lab room number), that lab MUST be placed in that exact room. Do not assign it to any other room.
+    6) THEORY CLASSES:
+       - Schedule exactly the required weekly counts per subject; do not exceed or fall short.
+       - Spread classes across multiple days. As a guideline, cap to at most 2 periods per subject per day unless impossible due to constraints.
+    7) FACULTY & ROOM CLASHES:
+       - Do not assign a faculty member or a room to two different classes at the same time.
+       - Respect facultyAvailability when choosing faculty for subjects.
+    8) FIXED CLASSES:
+       - Place all fixed classes exactly as specified (same day, slot, room, subject, faculty). Do not overlap them.
+    9) OUTPUT SCHEMA (STRICT; RETURN THREE OPTIONS):
+       {
+         "options": [
+           {
+             "timetable": {
+               "Monday": {
+                 "${timeSlots[0] || "09:00-10:00"}": {
+                   "${(classrooms[0] && classrooms[0].name) || "ROOM-101"}": { "subject": "SUBJECT_NAME", "faculty": "FACULTY_NAME" }
+                 }
+               },
+               "Tuesday": {}, "Wednesday": {}, "Thursday": {}, "Friday": {}
+             },
+             "recommendation": "Plain-language summary of benefits and trade-offs"
+           },
+           { "timetable": {"Monday": {}, "Tuesday": {}, "Wednesday": {}, "Thursday": {}, "Friday": {}}, "recommendation": "..." },
+           { "timetable": {"Monday": {}, "Tuesday": {}, "Wednesday": {}, "Thursday": {}, "Friday": {}}, "recommendation": "..." }
+         ]
+       }
+    10) CONTENT RULES:
+       - OMIT empty time slots entirely to keep the JSON small. Include only slots that have at least one room OR the LUNCH marker.
+       - For each scheduled class, provide both subject and faculty as non-empty strings.
+       - Never place any entry for time slots that are not in the provided list.
+       - Recommendation must be plain-language, non-technical, and at most 30 words.
+       - Avoid metrics/jargon. Describe the schedule style and human impact (e.g., "lighter afternoons", "evenly spread across the week", "labs kept together").
 
-    For each timetable FOLLOW THESE RULES AND STICK TO THESE RULES:
-
-    - Assign each subject's classes to available time slots and classrooms.
-    - Choose faculty based on the provided availability, ensuring no faculty clashes.
-    - Respect fixed classes as immovable events.
-    - Balance faculty workloads, minimize scheduling conflicts, and maximize room utilization.
-    - Subjects must be scheduled **exactly the specified number of weekly classes**; do NOT exceed these limits under any circumstance.
-    - If it is impossible to assign all classes without exceeding limits due to constraints, prioritize respecting limits and clearly note this limitation in the timetable option’s recommendation.
-    - Provide the timetable with days and time slots as keys, mapping to classroom assignments indicating subject and faculty.
-    - Include a "recommendation" field explaining the key advantages or trade-offs of this timetable option.
-    - Every MENTIONED day must have classes, there may be gaps within timeslots
-
-    Return ONLY a JSON array of these 3 timetable option objects with the following structure (USE THE ABOVE INPUT DATA ONLY):
-
-    [
-      {
-        "timetable": {
-          "Monday": {
-            "09:00-10:00": { "INPUT_ROOM_NO": { "subject": "INPUT_SUBJECT_1", "faculty": "INPUT_FACULTY_1" } },
-            "10:00-11:00": { "INPUT_ROOM_NO": { "subject": "INPUT_SUBJECT_2", "faculty": "INPUT_FACULTY_2, INPUT_FACULTY_3" } },
-            "...": { "...": { "subject": "...", "faculty": "..." } }
-          },
-          "Tuesday": { "...": { "...": { "subject": "...", "faculty": "..." } } },
-          "Wednesday": { "...": { "...": { "subject": "...", "faculty": "..." } } },
-          "Thursday": { "...": { "...": { "subject": "...", "faculty": "..." } } },
-          "Friday": { "...": { "...": { "subject": "...", "faculty": "..." } } }
-        },
-        "recommendation": "SUMMARIZE THE ALLOCATIONS AND TRADE-OFFS"
-      },
-      {...},
-      {...}
-    ]
+    Generate THREE clearly different timetable options:
+    - Option A: different labs on alternating days (same lab consecutive)
+    - Option B: balanced across the week with steady daily load
+    - Option C: afternoon-weighted with slower mornings
+    For each option, write a friendly 1–2 sentence recommendation explaining benefits and trade-offs for students and faculty in everyday terms. No numbers or technical terms.
+    Return ONLY one JSON object with an "options" array of length 3. No extra text.
     `;
 
   try {
-    const chatCompletion = await groq.chat.completions.create({
-      model: "openai/gpt-oss-120b",
+    const response = await groq.chat.completions.create({
+      model: "qwen/qwen3-32b",
       messages: [
+        { role: "system", content: "You are a strict JSON generator. Always return a single valid JSON object matching the requested schema. No extra text." },
         { role: "user", content: prompt }
       ],
       temperature: 1,
@@ -70,12 +154,19 @@ export default async function handler(req, res) {
       stop: null
     });
 
-    const timetableOptions = chatCompletion.choices[0].message.content;
-    console.log(timetableOptions)
+    const content = response.choices[0]?.message?.content || '{}';
+    let parsed = {};
+    try { parsed = JSON.parse(content); } catch {}
 
-    return res.status(200).json({ timetableOptions });
+    let options = Array.isArray(parsed.options) ? parsed.options : [];
+    options = options
+      .map((o) => (o && o.timetable ? o : { timetable: o || {}, recommendation: "" }))
+      .map((o) => ({ timetable: normalizeLunch(o.timetable || {}), recommendation: o.recommendation || "" }));
+
+    // Return only a single option for now
+    return res.status(200).json({ timetableOptions: options.slice(0, 1) });
   } catch (error) {
     console.error("Groq API error:", error);
-    return res.status(500).json({ error: "Failed to generate timetable" });
+    return res.status(200).json({ timetableOptions: [] });
   }
 }

@@ -1,51 +1,53 @@
-import { readTimetables, writeTimetables } from "../../../../lib/timetableStore";
+import { adminDb } from "../../../../lib/firebaseAdmin";
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
+  if (!adminDb) return res.status(500).json({ error: "Server not configured for Firestore" });
+
   const { id } = req.query;
-  let timetables = readTimetables();
-  const index = timetables.findIndex(t => t.id === id);
-  if (index === -1) return res.status(404).json({ error: "Timetable not found" });
+  const ref = adminDb.collection("timetables").doc(id);
 
-  if (req.method === "DELETE") {
-    // Remove the draft/timetable by id
-    timetables = timetables.filter(t => t.id !== id);
-    writeTimetables(timetables);
-    return res.status(200).json({ message: "Timetable deleted" });
-  }
+  try {
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ error: "Timetable not found" });
 
-  if (req.method === "PUT") {
-    const { action, comments, approver } = req.body;
-    if (!action || (action !== "approve" && action !== "reject")) {
-      return res.status(400).json({ error: "Invalid action" });
+    if (req.method === "DELETE") {
+      await ref.delete();
+      return res.status(200).json({ message: "Timetable deleted" });
     }
 
-    if (action === "approve") {
-      timetables[index] = {
-        ...timetables[index],
-        status: "approved",
-        approvedBy: approver || "unknown",
-        approvedAt: new Date().toISOString(),
-        comments: "",
-      };
-      writeTimetables(timetables);
-      return res.status(200).json({ message: "Timetable approved" });
-    }
-
-    if (action === "reject") {
-      if (!comments || comments.trim() === "") {
-        return res.status(400).json({ error: "Comments required for rejection" });
+    if (req.method === "PUT") {
+      const { action, comments, approver } = req.body;
+      if (!action || (action !== "approve" && action !== "reject")) {
+        return res.status(400).json({ error: "Invalid action" });
       }
-      timetables[index] = {
-        ...timetables[index],
-        status: "rejected",
-        approvedBy: approver || "unknown",
-        approvedAt: new Date().toISOString(),
-        comments,
-      };
-      writeTimetables(timetables);
-      return res.status(200).json({ message: "Timetable rejected" });
+
+      if (action === "approve") {
+        await ref.update({
+          status: "approved",
+          approvedBy: approver || "unknown",
+          approvedAt: new Date().toISOString(),
+          comments: ""
+        });
+        return res.status(200).json({ message: "Timetable approved" });
+      }
+
+      if (action === "reject") {
+        if (!comments || comments.trim() === "") {
+          return res.status(400).json({ error: "Comments required for rejection" });
+        }
+        await ref.update({
+          status: "rejected",
+          approvedBy: approver || "unknown",
+          approvedAt: new Date().toISOString(),
+          comments
+        });
+        return res.status(200).json({ message: "Timetable rejected" });
+      }
     }
-  } else {
-    res.status(405).json({ error: "Method not allowed" });
+
+    return res.status(405).json({ error: "Method not allowed" });
+  } catch (e) {
+    console.error("timetables [id] api error", e);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 }

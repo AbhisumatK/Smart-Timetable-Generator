@@ -37,7 +37,7 @@ export default function TimetablePage() {
   const [hasSelectedOption, setHasSelectedOption] = useState(false);
 
   useEffect(() => {
-    if (timeSlots.length && subjects.length && classrooms.length && facultyAssignments.length) {
+    if (timeSlots.length && subjects.length && classrooms.length) {
       generateTimetables({
         classrooms: classrooms, // assuming classrooms is an array
         timeSlots,
@@ -47,13 +47,28 @@ export default function TimetablePage() {
         fixedClasses,
       });
     }
-  }, [timeSlots, subjects, classrooms, labs, facultyAssignments, fixedClasses]);
+  }, [timeSlots, subjects, classrooms, labs]);
 
   useEffect(() => {
     if (!customizeMode) {
       setOriginalTimetable(timetable);
     }
   }, [customizeMode, timetable]);
+
+  // Auto-select the first option after generation completes
+  useEffect(() => {
+    try { console.log("[Timetable] auto-select gate", { generating, options: Array.isArray(timetableOptions) ? timetableOptions.length : 0 }); } catch {}
+    if (!generating && Array.isArray(timetableOptions) && timetableOptions.length > 0) {
+      const first = timetableOptions[0];
+      try { console.log("[Timetable] selecting option 0 keys", first && first.timetable ? Object.keys(first.timetable) : []); } catch {}
+      if (first && first.timetable) {
+        setTimetable(first.timetable);
+        setConflicts([]);
+        setCustomizeMode(false);
+        setHasSelectedOption(true);
+      }
+    }
+  }, [generating, timetableOptions]);
 
   const handleSave = () => {
     setCustomizeMode(false);
@@ -101,15 +116,34 @@ export default function TimetablePage() {
       </div>
       <div className="container max-w-6xl mx-auto mt-12 px-4 sm:px-6 lg:px-8">
         <div className="card p-6 sm:p-8 md:p-10 space-y-6">
-          <h2
-            className={`text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r bg-clip-text text-transparent drop-shadow-lg ${
-              isDark
-                ? "from-cyan-400 via-blue-400 to-purple-400"
-                : "from-cyan-700 via-blue-700 to-purple-700"
-            }`}
-          >
-            Generated Timetable Options
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2
+              className={`text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r bg-clip-text text-transparent drop-shadow-lg ${
+                isDark
+                  ? "from-cyan-400 via-blue-400 to-purple-400"
+                  : "from-cyan-700 via-blue-700 to-purple-700"
+              }`}
+            >
+              Generated Timetable Options
+            </h2>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() =>
+                generateTimetables({
+                  classrooms,
+                  timeSlots,
+                  labs,
+                  subjects: subjects.map((s) => ({ name: s.name, weekly: s.weekly })),
+                  facultyAvailability: facultyAssignments,
+                  fixedClasses,
+                })
+              }
+              disabled={generating}
+            >
+              {generating ? "Generating..." : "Generate Again"}
+            </button>
+          </div>
 
           {generationError && (
             <p className={isDark ? "text-red-300" : "text-red-700"}>

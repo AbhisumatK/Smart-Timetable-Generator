@@ -1,62 +1,59 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { auth, db } from '../lib/firebaseClient';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const AuthContext = createContext();
-
-function parseJwt(token) {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch {
-    return null;
-  }
-}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decoded = parseJwt(token);
-      if (decoded && decoded.exp * 1000 > Date.now()) {
-        setUser({ id: decoded.id, email: decoded.email, name: decoded.name, role: decoded.role });
+    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        const base = {
+          id: fbUser.uid,
+          email: fbUser.email,
+          name: fbUser.displayName || fbUser.email?.split('@')[0] || 'User'
+        };
+        let profile = {};
+        try {
+          const ref = doc(db, 'users', fbUser.uid);
+          const snap = await getDoc(ref);
+          if (snap.exists()) profile = snap.data();
+        } catch {}
+        setUser({ ...base, ...profile });
       } else {
-        localStorage.removeItem('token');
         setUser(null);
       }
-    } else {
-      setUser(null);
-    }
-    setLoading(false);
+      setLoading(false);
+    });
+    return () => unsub();
   }, []);
 
   const login = async (email, password) => {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!res.ok) {
-      throw new Error('Login failed');
-    }
-
-    const data = await res.json();
-    localStorage.setItem('token', data.token);
-    setUser(data.user);
+    await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+  const register = async (email, password, name, role = 'staff') => {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    if (name) {
+      await updateProfile(cred.user, { displayName: name });
+    }
+    try {
+      const ref = doc(db, 'users', cred.user.uid);
+      await setDoc(ref, {
+        name: name || cred.user.displayName || email.split('@')[0],
+        email,
+        role,
+        createdAt: new Date().toISOString()
+      }, { merge: true });
+    } catch {}
+  };
+
+  const logout = async () => {
+    await signOut(auth);
   };
 
   if (loading) {
@@ -64,7 +61,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

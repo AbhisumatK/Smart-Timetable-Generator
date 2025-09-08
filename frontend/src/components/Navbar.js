@@ -79,7 +79,7 @@ export default function Navbar() {
                   Drafts
                 </Link>
                 {userRole === "approver" && (
-                  <Link href="/approval" className={`text-sm ${isActive("/approval")}`}>
+                  <Link href="/approvals" className={`text-sm ${isActive("/approvals")}`}>
                     Approvals
                   </Link>
                 )}
@@ -173,7 +173,7 @@ export default function Navbar() {
                     </Link>
                     {userRole === "approver" && (
                       <Link
-                        href="/approval"
+                        href="/approvals"
                         className={`block px-4 py-2 text-sm transition-all duration-300 hover:shadow-lg ${
                           isDark
                             ? "text-slate-200 hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20 hover:text-cyan-300 hover:shadow-cyan-500/20"
