@@ -46,13 +46,13 @@ export default function ClassroomsPage() {
           {error && <div className={`mt-2 text-sm ${isDark ? "text-red-300" : "text-red-700"}`}>{error}</div>}
           <div className="flex justify-between mt-6">
             <button
-              className="inline-flex items-center justify-center rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white font-semibold px-4 py-2 transition-colors"
+              className="btn-secondary"
               onClick={() => router.push("/labs")}
             >
               Back
             </button>
             <button
-              className="inline-flex items-center justify-center rounded-lg bg-cyan-400/90 hover:bg-cyan-300 text-slate-900 font-semibold px-4 py-2 transition-colors"
+              className="btn-primary"
               onClick={() => router.push("/timetable")}
             >
               Generate Timetable

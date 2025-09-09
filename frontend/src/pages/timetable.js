@@ -193,13 +193,13 @@ export default function TimetablePage() {
                         setCustomizeMode(false);
                         setHasSelectedOption(true)
                       }}
-                      className={`card p-4 sm:p-5 w-full text-left transition-all duration-300 rounded-lg group transform animate-in slide-in-from-bottom-4 duration-500 hover:shadow-2xl hover:shadow-cyan-500/20
+                      className={`card p-4 sm:p-5 w-full text-left transition-all duration-300 rounded-lg group transform animate-in slide-in-from-bottom-4 duration-500 hover:shadow-2xl
                       ${
                         isSelected
                           ? "bg-gradient-to-r from-yellow-500 to-orange-500 border-yellow-400 text-white shadow-2xl shadow-yellow-500/30 scale-105"
                           : isDark
                           ? "bg-gradient-to-br from-slate-700/50 via-slate-600/40 to-slate-700/50 border-cyan-500/20 text-slate-200 hover:bg-gradient-to-r hover:from-yellow-400 hover:to-orange-400 hover:border-yellow-400 hover:text-white hover:shadow-2xl hover:shadow-yellow-500/30 hover:scale-105 focus:bg-gradient-to-r focus:from-yellow-500 focus:to-orange-500 focus:border-yellow-400 focus:text-white focus:shadow-2xl focus:shadow-yellow-500/30 focus:scale-105 active:bg-gradient-to-r active:from-yellow-600 active:to-orange-600 active:border-yellow-500 active:text-white active:scale-95"
-                          : "bg-gradient-to-br from-white/90 via-slate-50/80 to-white/90 border-cyan-500/40 text-slate-800 hover:bg-gradient-to-r hover:from-yellow-400 hover:to-orange-400 hover:border-yellow-400 hover:!text-white hover:shadow-2xl hover:shadow-yellow-500/30 hover:scale-105 focus:bg-gradient-to-r focus:from-yellow-500 focus:to-orange-500 focus:border-yellow-400 focus:!text-white focus:shadow-2xl focus:shadow-yellow-500/30 focus:scale-105 active:bg-gradient-to-r active:from-yellow-600 active:to-orange-600 active:border-yellow-500 active:!text-white active:scale-95"
+                          : "bg-gradient-to-br from-white/90 via-slate-50/80 to-white/90 border-slate-400 text-slate-900 hover:bg-gradient-to-r hover:from-yellow-400 hover:to-orange-400 hover:border-yellow-400 hover:!text-white hover:shadow-2xl hover:shadow-yellow-500/30 hover:scale-105 focus:bg-gradient-to-r focus:from-yellow-500 focus:to-orange-500 focus:border-yellow-400 focus:!text-white focus:shadow-2xl focus:shadow-yellow-500/30 focus:scale-105 active:bg-gradient-to-r active:from-yellow-600 active:to-orange-600 active:border-yellow-500 active:!text-white active:scale-95"
                       }
                     `}
                       style={{ animationDelay: `${idx * 100}ms` }}
@@ -207,7 +207,7 @@ export default function TimetablePage() {
                       <strong
                         className={`block transition-all duration-200 ${
                           isSelected
-                            ? "text-white font-bold"
+                            ? (isDark ? "text-white font-bold" : "text-black font-bold")
                             : isDark
                             ? "text-slate-200 group-hover:text-white group-hover:font-bold group-focus:text-white group-focus:font-bold group-active:text-white group-active:font-bold"
                             : "text-slate-700 group-hover:!text-black group-hover:font-bold group-focus:!text-black group-focus:font-bold group-active:!text-black group-active:font-bold"
@@ -218,7 +218,7 @@ export default function TimetablePage() {
                       <p
                         className={`text-sm mt-1 transition-all duration-200 font-medium ${
                           isSelected
-                            ? "text-white/90"
+                            ? (isDark ? "text-white/90" : "text-black")
                             : isDark
                             ? "text-slate-300 group-hover:text-white/90 group-focus:text-white/90 group-active:text-white/90"
                             : "text-slate-600 group-hover:!text-black group-focus:!text-black group-active:!text-black"

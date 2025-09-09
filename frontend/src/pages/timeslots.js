@@ -130,7 +130,7 @@ export default function TimeSlotsPage() {
                   className={`group card-compact flex items-center justify-center px-3 py-2 border rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50 hover:bg-cyan-500/10 hover:border-cyan-500/40 ${
                     isDark 
                       ? "border-slate-600/50 text-slate-300 hover:text-slate-100" 
-                      : "border-slate-400/50 text-slate-700 hover:text-slate-900"
+                      : "border-slate-500 text-slate-900 hover:text-black"
                   }`}
                   aria-label="Open time scroller"
                   aria-expanded={showPicker}
@@ -154,18 +154,18 @@ export default function TimeSlotsPage() {
                 <div className={`absolute z-20 mt-2 w-full md:w-[38rem] rounded-xl border backdrop-blur p-4 shadow-xl ${
                   isDark 
                     ? "border-slate-700/60 bg-slate-900/95" 
-                    : "border-slate-300/60 bg-white/95"
+                    : "border-slate-500/70 bg-white"
                 }`}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <div className={`mb-2 font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}>Start time</div>
+                      <div className={`mb-2 font-semibold ${isDark ? "text-slate-300" : "text-slate-900"}`}>Start time</div>
                       <div className="grid grid-cols-2 gap-3">
                         <ScrollColumn options={hours} value={startHour} onChange={setStartHour} ariaLabel="Start hour" isDark={isDark} />
                         <ScrollColumn options={minutes} value={startMinute} onChange={setStartMinute} ariaLabel="Start minute" isDark={isDark} />
                       </div>
                     </div>
                     <div>
-                      <div className={`mb-2 font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}>End time</div>
+                      <div className={`mb-2 font-semibold ${isDark ? "text-slate-300" : "text-slate-900"}`}>End time</div>
                       <div className="grid grid-cols-2 gap-3">
                         <ScrollColumn options={hours} value={endHour} onChange={setEndHour} ariaLabel="End hour" isDark={isDark} />
                         <ScrollColumn options={minutes} value={endMinute} onChange={setEndMinute} ariaLabel="End minute" isDark={isDark} />
@@ -178,7 +178,7 @@ export default function TimeSlotsPage() {
                       className={`card-compact px-4 py-2 border rounded-lg ${
                         isDark 
                           ? "text-slate-300 hover:bg-slate-800/60 border-slate-600/50" 
-                          : "text-slate-700 hover:bg-slate-200/60 border-slate-400/50"
+                          : "text-slate-900 hover:bg-slate-200/80 border-slate-500"
                       }`}
                       onClick={() => setShowPicker(false)}
                     >
@@ -228,7 +228,7 @@ export default function TimeSlotsPage() {
                 <button className="btn-primary" onClick={generateByStartAndDuration}>Generate</button>
                 <button className="btn-secondary ml-2" onClick={clearAll}>Clear</button>
               </div>
-              <p className={`mt-2 text-xs ${isDark ? "text-slate-400" : "text-slate-600"}`}>Creates contiguous HH:MM-HH:MM slots from the start time.</p>
+              <p className={`mt-2 text-xs ${isDark ? "text-slate-400" : "text-slate-800"}`}>Creates contiguous HH:MM-HH:MM slots from the start time.</p>
             </div>
 
             {error && <div className="text-red-400 mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm">{error}</div>}
@@ -239,24 +239,24 @@ export default function TimeSlotsPage() {
                 {timeSlots.map((item, i) => (
                   <div key={i} className="card flex items-center justify-between px-3 py-2">
                     <div className="flex items-center gap-2">
-                      <span className={isDark ? "text-slate-200" : "text-slate-800"}>{item}</span>
-                      {item === lunchSlot && <span className="text-xs text-amber-300">(Lunch)</span>}
+                      <span className={isDark ? "text-slate-200" : "text-slate-900"}>{item}</span>
+                      {item === lunchSlot && <span className={`text-xs ${isDark ? "text-amber-300" : "text-amber-700"}`}>(Lunch)</span>}
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         className={`px-2 py-1 rounded-md border text-xs ${
                           item === lunchSlot
-                            ? "border-amber-400 text-amber-300"
+                            ? (isDark ? "border-amber-400 text-amber-300" : "border-orange-600 text-orange-700")
                             : isDark
                               ? "border-slate-600/50 text-slate-300 hover:bg-slate-800/60"
-                              : "border-slate-400/50 text-slate-700 hover:bg-slate-200/60"
+                              : "border-slate-500 text-slate-900 hover:bg-slate-200/80"
                         }`}
                         onClick={() => setLunchSlot(item === lunchSlot ? null : item)}
                         aria-pressed={item === lunchSlot}
                       >
                         {item === lunchSlot ? "Unset Lunch" : "Set Lunch"}
                       </button>
-                      <button className="text-red-400 hover:text-red-300" onClick={() => removeSlot(i)}>Remove</button>
+                      <button className={`${isDark ? "text-red-400 hover:text-red-300 font-semibold" : "text-red-600 hover:text-red-700 font-semibold"}`} onClick={() => removeSlot(i)}>Remove</button>
                     </div>
                   </div>
                 ))}
@@ -266,7 +266,7 @@ export default function TimeSlotsPage() {
               </div>
             </div>
             
-            <div className={`flex justify-between mt-8 pt-6 border-t ${isDark ? "border-slate-700/50" : "border-slate-300/50"}`}>
+            <div className={`flex justify-between mt-8 pt-6 border-t ${isDark ? "border-slate-700/50" : "border-slate-500"}`}>
               <button className="btn-secondary" onClick={() => router.push("/")}>Back</button>
               <button
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"

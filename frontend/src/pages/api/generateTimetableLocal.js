@@ -466,18 +466,18 @@ export default async function handler(req, res) {
     };
   }
 
-  // Build three distinct options
+  // Build three distinct options (no logic change; refine reco copy)
   const optA = buildOption(
     strategyA(),
-    "Labs are grouped and placed on alternating days to keep practical work together while easing daily transitions for faculty and students."
+    "Labs are grouped on alternating days to keep practicals together while easing transitions for faculty and students."
   );
   const optB = buildOption(
     strategyB(),
-    "Classes are evenly spread through the week to keep daily workloads steady and predictable."
+    "Classes are evenly spread across the week for steady, predictable daily workloads."
   );
   const optC = buildOption(
     strategyC(),
-    "Afternoons carry more classes, leaving slower, lighter mornings for prep and catch-up."
+    "Afternoons carry more classes, leaving lighter mornings for prep and catch‑up."
   );
 
   // Shape exactly like original response path

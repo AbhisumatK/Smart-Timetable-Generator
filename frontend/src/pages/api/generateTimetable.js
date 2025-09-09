@@ -64,78 +64,60 @@ export default async function handler(req, res) {
     }
   }
 
-  // Construct prompt with inputs (example)
+  // Construct refined prompt (no logic changes)
   const prompt = `
-    You are an expert academic timetable scheduler AI. Build valid, display-ready timetables that STRICTLY follow the inputs.
+    You are an expert academic timetable planner. Produce STRICT JSON that is immediately display-ready and follows ALL constraints below.
 
     INPUTS:
-    - Classrooms (use exactly these as room keys; do not invent): [${classrooms.map(s => s.name).join(", ")}]
-    - Ordered time slots for Monday–Friday (use EXACTLY as keys; do not invent/modify): [${timeSlots.join(", ")}]
-    - Lab subjects (schedule once per week; duration is consecutive count of provided slots; preferred slot indicates preferred start or period to place if possible; if a room is provided, that room MUST be used): ${labs.map(l => `{name:"${l.name}", duration:"${l.duration}", preferred:"${l.preferred || ""}", room:"${l.room || ""}"}`).join(", ")}
-    - Theory subjects with required weekly classes (must match exactly; do not exceed): ${subjects.map(s => `{name:"${s.name}", weekly:${s.weekly}}`).join(", ")}
-    - Faculty availability map (subject -> allowed faculty and their available days/slots): ${JSON.stringify(facultyAvailability)}
-    - Fixed classes (immutable; must appear exactly as specified): ${JSON.stringify(fixedClasses)}
-    - Lunch slot (if provided, block this slot on all days with a LUNCH marker and no classes): ${JSON.stringify(lunchSlot)}
+    - Classrooms (use exactly and only these as room keys): [${classrooms.map(s => s.name).join(", ")}]
+    - Ordered timeSlots for Monday–Friday (use EXACT strings as keys): [${timeSlots.join(", ")}]
+    - Labs (each exactly once/week; duration = consecutive slot count; preferred = preferred start slot; if room provided, MUST use it): ${labs.map(l => `{name:"${l.name}", duration:"${l.duration}", preferred:"${l.preferred || ""}", room:"${l.room || ""}"}`).join(", ")}
+    - Theory subjects (exact weekly occurrences): ${subjects.map(s => `{name:"${s.name}", weekly:${s.weekly}}`).join(", ")}
+    - Faculty availability (subject -> allowed faculty with available Day -> [slots]): ${JSON.stringify(facultyAvailability)}
+    - Fixed classes (immutable placements): ${JSON.stringify(fixedClasses)}
+    - Lunch slot (if provided): ${JSON.stringify(lunchSlot)}
 
-    HARD RULES (MUST FOLLOW):
-    1) TIME FORMAT AND KEYS:
-       - Use the provided timeSlots VERBATIM as the only keys for time on each day.
-       - Do NOT change formatting; keep strictly as HH:MM-HH:MM (e.g., 09:00-10:00) exactly as given.
-       - Do NOT add, merge, split, or invent any time slots.
-    2) DAYS:
-       - Include exactly these days as top-level keys: Monday, Tuesday, Wednesday, Thursday, Friday.
-       - Each day may include ONLY NON-EMPTY timeSlots (omit empty ones entirely) EXCEPT the lunchSlot which must be present if provided.
-    3) ROOMS:
-       - Inside each time slot, keys must be classroom names from the provided classrooms or the special key "LUNCH" only.
-       - Do NOT create unknown rooms.
-       - If a lab specifies a room, schedule that lab ONLY in that exact room.
-    4) LUNCH:
-       - If lunchSlot is provided, mark that slot on ALL days with a single entry: "LUNCH": { "subject": "Lunch Break", "faculty": "" } and schedule no classes in that slot.
-       - If lunchSlot is not provided, do NOT invent any lunch period.
-    5) LABS:
-       - Each lab listed must be scheduled EXACTLY ONCE per week.
-       - Labs must occupy consecutive timeSlots on the SAME day according to their duration (duration is number of slots; if given in hours, map to the equivalent number of adjacent slots).
-       - Do NOT split a lab across non-consecutive slots or days.
-       - Try to honor preferred when possible without violating constraints.
-       - If a lab has a specified room (e.g., a lab room number), that lab MUST be placed in that exact room. Do not assign it to any other room.
-    6) THEORY CLASSES:
-       - Schedule exactly the required weekly counts per subject; do not exceed or fall short.
-       - Spread classes across multiple days. As a guideline, cap to at most 2 periods per subject per day unless impossible due to constraints.
-    7) FACULTY & ROOM CLASHES:
-       - Do not assign a faculty member or a room to two different classes at the same time.
-       - Respect facultyAvailability when choosing faculty for subjects.
-    8) FIXED CLASSES:
-       - Place all fixed classes exactly as specified (same day, slot, room, subject, faculty). Do not overlap them.
-    9) OUTPUT SCHEMA (STRICT; RETURN THREE OPTIONS):
-       {
-         "options": [
-           {
-             "timetable": {
-               "Monday": {
-                 "${timeSlots[0] || "09:00-10:00"}": {
-                   "${(classrooms[0] && classrooms[0].name) || "ROOM-101"}": { "subject": "SUBJECT_NAME", "faculty": "FACULTY_NAME" }
-                 }
-               },
-               "Tuesday": {}, "Wednesday": {}, "Thursday": {}, "Friday": {}
-             },
-             "recommendation": "Plain-language summary of benefits and trade-offs"
-           },
-           { "timetable": {"Monday": {}, "Tuesday": {}, "Wednesday": {}, "Thursday": {}, "Friday": {}}, "recommendation": "..." },
-           { "timetable": {"Monday": {}, "Tuesday": {}, "Wednesday": {}, "Thursday": {}, "Friday": {}}, "recommendation": "..." }
-         ]
-       }
-    10) CONTENT RULES:
-       - OMIT empty time slots entirely to keep the JSON small. Include only slots that have at least one room OR the LUNCH marker.
-       - For each scheduled class, provide both subject and faculty as non-empty strings.
-       - Never place any entry for time slots that are not in the provided list.
-       - Recommendation must be plain-language, non-technical, and at most 30 words.
-       - Avoid metrics/jargon. Describe the schedule style and human impact (e.g., "lighter afternoons", "evenly spread across the week", "labs kept together").
+    HARD RULES (NO EXCEPTIONS):
+    1) Time keys: Use provided timeSlots VERBATIM (HH:MM-HH:MM). Do not invent, merge, split, or reformat.
+    2) Days: Top-level keys MUST be exactly Monday, Tuesday, Wednesday, Thursday, Friday.
+    3) Rooms: Within a time slot, keys are ONLY classroom names from input or the special key "LUNCH".
+    4) Lunch: If lunchSlot exists, set that slot on ALL days to { "LUNCH": { "subject": "Lunch Break", "faculty": "" } } and schedule nothing else in that slot. If no lunchSlot, do not invent lunch.
+    5) Labs: Schedule each exactly once per week; occupy consecutive slots on the same day; never split; honor preferred and fixed room when possible without violating constraints.
+    6) Theory: Schedule each subject exactly weekly times; spread across days; aim ≤ 2 periods/day/subject when feasible.
+    7) Conflicts: Never double-book a room or a faculty; faculty must be chosen from the subject’s facultyAvailability for that exact day and slot.
+    8) Fixed classes: Place exactly as specified (same day, slot, room, subject, faculty).
 
-    Generate THREE clearly different timetable options:
-    - Option A: different labs on alternating days (same lab consecutive)
-    - Option B: balanced across the week with steady daily load
-    - Option C: afternoon-weighted with slower mornings
-    For each option, write a friendly 1–2 sentence recommendation explaining benefits and trade-offs for students and faculty in everyday terms. No numbers or technical terms.
+    OUTPUT (STRICT SCHEMA – THREE OPTIONS):
+    {
+      "options": [
+        {
+          "timetable": {
+            "Monday": {
+              "${timeSlots[0] || "09:00-10:00"}": {
+                "${(classrooms[0] && classrooms[0].name) || "ROOM-101"}": { "subject": "SUBJECT_NAME", "faculty": "FACULTY_NAME" }
+              }
+            },
+            "Tuesday": {}, "Wednesday": {}, "Thursday": {}, "Friday": {}
+          },
+          "recommendation": "Plain-language benefits/trade-offs"
+        },
+        { "timetable": {"Monday": {}, "Tuesday": {}, "Wednesday": {}, "Thursday": {}, "Friday": {}}, "recommendation": "..." },
+        { "timetable": {"Monday": {}, "Tuesday": {}, "Wednesday": {}, "Thursday": {}, "Friday": {}}, "recommendation": "..." }
+      ]
+    }
+
+    CONTENT & QUALITY RULES:
+    - Omit empty time slots entirely (except include lunchSlot if provided).
+    - Every scheduled class must have non-empty subject and faculty.
+    - Never use a time slot not in the provided list; never use a room not in the provided list.
+    - Recommendation: friendly, 1–2 sentences, ≤ 30 words.
+    - Prefer balanced distribution and minimal conflicts. If a perfect schedule is impossible, still return the best-feasible option that obeys all hard rules.
+
+    Generate THREE clearly distinct options:
+    - Option A: labs grouped on alternating days (each lab consecutive)
+    - Option B: evenly balanced across the week
+    - Option C: afternoon-weighted (lighter mornings)
+
     Return ONLY one JSON object with an "options" array of length 3. No extra text.
     `;
 

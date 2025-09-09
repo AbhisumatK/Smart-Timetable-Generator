@@ -78,7 +78,11 @@ export default function LabsPage() {
             </div>
             <div>
               <label className="label">Preferred start (optional)</label>
-              <select className="input" value={labPreferred} onChange={(e)=>setLabPreferred(e.target.value)}>
+              <select
+                className={`input ${isDark ? "bg-slate-900/80 text-slate-100 border-slate-600 focus:ring-cyan-500/60" : ""}`}
+                value={labPreferred}
+                onChange={(e)=>setLabPreferred(e.target.value)}
+              >
                 <option value="">No preference</option>
                 {preferredStartOptions.map((opt) => (
                   <option key={opt} value={opt}>{opt}</option>
@@ -145,13 +149,13 @@ export default function LabsPage() {
 
           <div className="flex justify-between">
             <button 
-              className="inline-flex items-center justify-center rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white font-semibold px-4 py-2 transition-colors" 
+              className="btn-secondary"
               onClick={() => router.push("/fixedClasses")}
             >
               Back
             </button>
             <button
-              className="inline-flex items-center justify-center rounded-lg bg-cyan-400/90 hover:bg-cyan-300 text-slate-900 font-semibold px-4 py-2 transition-colors"
+              className="btn-primary"
               onClick={() => router.push("/classrooms")}
             >
               Next
