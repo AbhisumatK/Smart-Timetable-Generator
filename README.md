@@ -2,8 +2,6 @@
 
 A modern, AI-powered timetable generation system built with Next.js, Firebase, and Perplexity AI. This application helps educational institutions create optimized class schedules with intelligent conflict resolution and approval workflows.
 
-![Smart Timetable Generator](public/logo.png)
-
 ## ✨ Features
 
 ### 🎯 Core Functionality
