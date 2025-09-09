@@ -37,7 +37,7 @@ export default function TimetablePage() {
   const [hasSelectedOption, setHasSelectedOption] = useState(false);
 
   useEffect(() => {
-    if (timeSlots.length && subjects.length && classrooms.length && facultyAssignments.length) {
+    if (timeSlots.length && subjects.length && classrooms.length) {
       generateTimetables({
         classrooms: classrooms, // assuming classrooms is an array
         timeSlots,
@@ -47,13 +47,28 @@ export default function TimetablePage() {
         fixedClasses,
       });
     }
-  }, [timeSlots, subjects, classrooms, labs, facultyAssignments, fixedClasses]);
+  }, [timeSlots, subjects, classrooms, labs]);
 
   useEffect(() => {
     if (!customizeMode) {
       setOriginalTimetable(timetable);
     }
   }, [customizeMode, timetable]);
+
+  // Auto-select the first option after generation completes
+  useEffect(() => {
+    try { console.log("[Timetable] auto-select gate", { generating, options: Array.isArray(timetableOptions) ? timetableOptions.length : 0 }); } catch {}
+    if (!generating && Array.isArray(timetableOptions) && timetableOptions.length > 0) {
+      const first = timetableOptions[0];
+      try { console.log("[Timetable] selecting option 0 keys", first && first.timetable ? Object.keys(first.timetable) : []); } catch {}
+      if (first && first.timetable) {
+        setTimetable(first.timetable);
+        setConflicts([]);
+        setCustomizeMode(false);
+        setHasSelectedOption(true);
+      }
+    }
+  }, [generating, timetableOptions]);
 
   const handleSave = () => {
     setCustomizeMode(false);
@@ -101,15 +116,34 @@ export default function TimetablePage() {
       </div>
       <div className="container max-w-6xl mx-auto mt-12 px-4 sm:px-6 lg:px-8">
         <div className="card p-6 sm:p-8 md:p-10 space-y-6">
-          <h2
-            className={`text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r bg-clip-text text-transparent drop-shadow-lg ${
-              isDark
-                ? "from-cyan-400 via-blue-400 to-purple-400"
-                : "from-cyan-700 via-blue-700 to-purple-700"
-            }`}
-          >
-            Generated Timetable Options
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2
+              className={`text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r bg-clip-text text-transparent drop-shadow-lg ${
+                isDark
+                  ? "from-cyan-400 via-blue-400 to-purple-400"
+                  : "from-cyan-700 via-blue-700 to-purple-700"
+              }`}
+            >
+              Generated Timetable Options
+            </h2>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() =>
+                generateTimetables({
+                  classrooms,
+                  timeSlots,
+                  labs,
+                  subjects: subjects.map((s) => ({ name: s.name, weekly: s.weekly })),
+                  facultyAvailability: facultyAssignments,
+                  fixedClasses,
+                })
+              }
+              disabled={generating}
+            >
+              {generating ? "Generating..." : "Generate Again"}
+            </button>
+          </div>
 
           {generationError && (
             <p className={isDark ? "text-red-300" : "text-red-700"}>
@@ -159,13 +193,13 @@ export default function TimetablePage() {
                         setCustomizeMode(false);
                         setHasSelectedOption(true)
                       }}
-                      className={`card p-4 sm:p-5 w-full text-left transition-all duration-300 rounded-lg group transform animate-in slide-in-from-bottom-4 duration-500 hover:shadow-2xl hover:shadow-cyan-500/20
+                      className={`card p-4 sm:p-5 w-full text-left transition-all duration-300 rounded-lg group transform animate-in slide-in-from-bottom-4 duration-500 hover:shadow-2xl
                       ${
                         isSelected
                           ? "bg-gradient-to-r from-yellow-500 to-orange-500 border-yellow-400 text-white shadow-2xl shadow-yellow-500/30 scale-105"
                           : isDark
                           ? "bg-gradient-to-br from-slate-700/50 via-slate-600/40 to-slate-700/50 border-cyan-500/20 text-slate-200 hover:bg-gradient-to-r hover:from-yellow-400 hover:to-orange-400 hover:border-yellow-400 hover:text-white hover:shadow-2xl hover:shadow-yellow-500/30 hover:scale-105 focus:bg-gradient-to-r focus:from-yellow-500 focus:to-orange-500 focus:border-yellow-400 focus:text-white focus:shadow-2xl focus:shadow-yellow-500/30 focus:scale-105 active:bg-gradient-to-r active:from-yellow-600 active:to-orange-600 active:border-yellow-500 active:text-white active:scale-95"
-                          : "bg-gradient-to-br from-white/90 via-slate-50/80 to-white/90 border-cyan-500/40 text-slate-800 hover:bg-gradient-to-r hover:from-yellow-400 hover:to-orange-400 hover:border-yellow-400 hover:!text-white hover:shadow-2xl hover:shadow-yellow-500/30 hover:scale-105 focus:bg-gradient-to-r focus:from-yellow-500 focus:to-orange-500 focus:border-yellow-400 focus:!text-white focus:shadow-2xl focus:shadow-yellow-500/30 focus:scale-105 active:bg-gradient-to-r active:from-yellow-600 active:to-orange-600 active:border-yellow-500 active:!text-white active:scale-95"
+                          : "bg-gradient-to-br from-white/90 via-slate-50/80 to-white/90 border-slate-400 text-slate-900 hover:bg-gradient-to-r hover:from-yellow-400 hover:to-orange-400 hover:border-yellow-400 hover:!text-white hover:shadow-2xl hover:shadow-yellow-500/30 hover:scale-105 focus:bg-gradient-to-r focus:from-yellow-500 focus:to-orange-500 focus:border-yellow-400 focus:!text-white focus:shadow-2xl focus:shadow-yellow-500/30 focus:scale-105 active:bg-gradient-to-r active:from-yellow-600 active:to-orange-600 active:border-yellow-500 active:!text-white active:scale-95"
                       }
                     `}
                       style={{ animationDelay: `${idx * 100}ms` }}
@@ -173,7 +207,7 @@ export default function TimetablePage() {
                       <strong
                         className={`block transition-all duration-200 ${
                           isSelected
-                            ? "text-white font-bold"
+                            ? (isDark ? "text-white font-bold" : "text-black font-bold")
                             : isDark
                             ? "text-slate-200 group-hover:text-white group-hover:font-bold group-focus:text-white group-focus:font-bold group-active:text-white group-active:font-bold"
                             : "text-slate-700 group-hover:!text-black group-hover:font-bold group-focus:!text-black group-focus:font-bold group-active:!text-black group-active:font-bold"
@@ -184,7 +218,7 @@ export default function TimetablePage() {
                       <p
                         className={`text-sm mt-1 transition-all duration-200 font-medium ${
                           isSelected
-                            ? "text-white/90"
+                            ? (isDark ? "text-white/90" : "text-black")
                             : isDark
                             ? "text-slate-300 group-hover:text-white/90 group-focus:text-white/90 group-active:text-white/90"
                             : "text-slate-600 group-hover:!text-black group-focus:!text-black group-active:!text-black"

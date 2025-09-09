@@ -115,7 +115,7 @@ export default function TimetableTable({
                         ? "bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30 scale-105 border-cyan-500/50"
                         : isDark
                         ? "border-cyan-500/20 text-slate-300 hover:bg-gradient-to-br hover:from-cyan-500/30 hover:to-blue-500/30 hover:text-white hover:shadow-lg hover:shadow-cyan-500/20 hover:scale-105"
-                        : "border-cyan-500/40 text-slate-700 hover:bg-gradient-to-br hover:from-cyan-500/40 hover:to-blue-500/40 hover:text-white hover:shadow-lg hover:shadow-cyan-500/30 hover:scale-105"
+                        : "group border-cyan-500/40 text-slate-700 hover:bg-gradient-to-br hover:from-cyan-500/40 hover:to-blue-500/40 hover:!text-black hover:shadow-lg hover:shadow-cyan-500/30 hover:scale-105"
                     }`}
                     onClick={() => handleBlockClick(day, slot)}
                   >
@@ -123,7 +123,7 @@ export default function TimetableTable({
                       {!cell || Object.keys(cell).length === 0 ? (
                         <span
                           className={`italic ${
-                            isDark ? "text-slate-500" : "text-slate-600"
+                            isDark ? "text-slate-500" : "text-slate-600 group-hover:!text-black"
                           }`}
                         >
                           --
@@ -136,14 +136,16 @@ export default function TimetableTable({
                             <div key={room} className="mb-1 last:mb-0">
                               <strong
                                 title={`Classroom ${room}`}
-                                className="block truncate font-semibold"
+                                className={`block truncate font-semibold ${
+                                  isDark ? "" : "group-hover:!text-black"
+                                }`}
                               >
                                 Room {room}
                               </strong>
                               <div className="truncate">
                                 <span
                                   className={`font-bold ${
-                                    isDark ? "text-white" : "text-slate-800"
+                                    isDark ? "text-white" : "text-slate-800 group-hover:!text-black"
                                   }`}
                                   title={subject}
                                 >
@@ -152,7 +154,7 @@ export default function TimetableTable({
                                 {faculty && (
                                   <span
                                     className={`text-xs ml-1 ${
-                                      isDark ? "text-cyan-200" : "text-cyan-700"
+                                      isDark ? "text-cyan-200" : "text-cyan-700 group-hover:!text-black"
                                     }`}
                                     title={faculty}
                                   >

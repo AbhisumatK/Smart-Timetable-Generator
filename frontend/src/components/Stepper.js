@@ -1,10 +1,17 @@
 import { useTheme } from "../context/ThemeContext";
+import { useRouter } from "next/router";
 
 const STEPS = [
-	"Start", "Time Slots", "Subjects", "FixedClasses", "Labs", "Classrooms", "Review"
+	"Start", "Time Slots", "Subjects", "Fixed Classes", "Labs", "Classrooms", "Review"
 ];
+
+const ROUTES = [
+	"/", "/timeslots", "/subjects", "/fixedClasses", "/labs", "/classrooms", "/timetable"
+];
+
 export default function Stepper({ step }) {
 	const { isDark } = useTheme();
+	const router = useRouter();
 	
 	return (
 		<div className="w-full mb-8">
@@ -12,6 +19,7 @@ export default function Stepper({ step }) {
 				{STEPS.map((title, i) => {
 					const isActive = i === step;
 					const isCompleted = i < step;
+					const href = ROUTES[i];
 					return (
 						<li key={i} className="flex flex-col items-center relative flex-1">
 							{/* Connection line */}
@@ -21,24 +29,27 @@ export default function Stepper({ step }) {
 								}`}>
 									<div className={`h-full transition-all duration-300 ${
 										isCompleted ? 'bg-cyan-500' : (isDark ? 'bg-slate-600/30' : 'bg-slate-400/40')
-									}`} style={{ width: isCompleted ? '100%' : '0%' }}></div>
+									}` } style={{ width: isCompleted ? '100%' : '0%' }}></div>
 								</div>
 							)}
 							
-							{/* Step button */}
-							<div
-								className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${
+							{/* Clickable step button */}
+							<button
+								type="button"
+								onClick={() => href && router.push(href)}
+								title={`Go to ${title}`}
+								className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 focus:outline-none focus:ring-2 ${
 									isActive
 										? isDark
-											? "border-cyan-500 bg-cyan-600/20 text-cyan-400 shadow-lg shadow-cyan-500/20"
-											: "border-cyan-600 bg-cyan-500/20 text-cyan-700 shadow-lg shadow-cyan-500/30"
+											? "border-cyan-500 bg-cyan-600/20 text-cyan-400 shadow-lg shadow-cyan-500/20 focus:ring-cyan-500/40"
+											: "border-cyan-600 bg-cyan-500/20 text-cyan-700 shadow-lg shadow-cyan-500/30 focus:ring-cyan-500/40"
 										: isCompleted
 										? isDark
-											? "border-cyan-500 bg-cyan-500 text-white"
-											: "border-cyan-600 bg-cyan-600 text-white"
+											? "border-cyan-500 bg-cyan-500 text-white focus:ring-cyan-500/40"
+											: "border-cyan-600 bg-cyan-600 text-white focus:ring-cyan-500/40"
 										: isDark
-											? "border-slate-600/50 bg-slate-800/50 text-slate-400"
-											: "border-slate-400/60 bg-slate-200/80 text-slate-600"
+											? "border-slate-600/50 bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 cursor-pointer"
+											: "border-slate-400/60 bg-slate-200/80 text-slate-600 hover:bg-slate-300/60 cursor-pointer"
 								}`}
 							>
 								{isCompleted ? (
@@ -48,10 +59,14 @@ export default function Stepper({ step }) {
 								) : (
 									<span className="text-sm font-semibold">{i + 1}</span>
 								)}
-							</div>
+							</button>
 							
-							{/* Step label */}
-							<div className="mt-3 text-center">
+							{/* Step label (also clickable) */}
+							<button
+								type="button"
+								onClick={() => href && router.push(href)}
+								className="mt-3 text-center"
+							>
 								<span className={`text-xs sm:text-sm font-medium transition-colors ${
 									isActive
 										? isDark
@@ -67,7 +82,7 @@ export default function Stepper({ step }) {
 								}`}>
 									{title}
 								</span>
-							</div>
+							</button>
 						</li>
 					);
 				})}

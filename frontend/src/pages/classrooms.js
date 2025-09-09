@@ -33,6 +33,10 @@ export default function ClassroomsPage() {
       </div>
       <div className="page-container">
         <div className="content-wrapper">
+        <div className="text-center mb-8">
+            <h2 className="section-header">Classrooms</h2>
+            <p className="section-subtitle">Provide class room-numbers for your subjects.</p>
+          </div>
           <div className="card max-w-3xl mx-auto p-8">
           <InputList
             label="Enter Classroom Names"
@@ -46,13 +50,13 @@ export default function ClassroomsPage() {
           {error && <div className={`mt-2 text-sm ${isDark ? "text-red-300" : "text-red-700"}`}>{error}</div>}
           <div className="flex justify-between mt-6">
             <button
-              className="inline-flex items-center justify-center rounded-lg bg-violet-500/90 hover:bg-violet-400 text-white font-semibold px-4 py-2 transition-colors"
+              className="btn-secondary"
               onClick={() => router.push("/labs")}
             >
               Back
             </button>
             <button
-              className="inline-flex items-center justify-center rounded-lg bg-cyan-400/90 hover:bg-cyan-300 text-slate-900 font-semibold px-4 py-2 transition-colors"
+              className="btn-primary"
               onClick={() => router.push("/timetable")}
             >
               Generate Timetable
