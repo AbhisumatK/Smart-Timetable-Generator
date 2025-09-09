@@ -4,6 +4,36 @@
 export default async function handler(req, res) {
     if (req.method !== "POST") return res.status(405).end("Method Not Allowed");
   
+    function normalizeFixedClasses(timetable) {
+      try {
+        if (!Array.isArray(fixedClasses) || fixedClasses.length === 0) return timetable;
+        const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+        const result = { ...(timetable || {}) };
+        for (const fc of fixedClasses) {
+          const day = fc?.day;
+          const time = fc?.time;
+          const room = fc?.room;
+          const subject = (fc?.subject || "").trim();
+          const faculty = (fc?.faculty || "").trim();
+          if (!day || !time || !room || !subject) continue;
+          if (!days.includes(day)) continue;
+          if (Array.isArray(timeSlots) && timeSlots.length && !timeSlots.includes(time)) continue;
+          if (lunchSlot && time === lunchSlot) {
+            // Lunch slot is exclusive; skip overlaying fixed class here
+            continue;
+          }
+          const dayMap = { ...(result[day] || {}) };
+          const slotMap = { ...(dayMap[time] || {}) };
+          slotMap[room] = { subject, faculty };
+          dayMap[time] = slotMap;
+          result[day] = dayMap;
+        }
+        return result;
+      } catch {
+        return timetable;
+      }
+    }
+  
     const { classrooms, timeSlots, labs, subjects, facultyAvailability, fixedClasses, lunchSlot } = req.body;
     // Optional: cleaner server logs
     // console.log('req.body =\n' + JSON.stringify(req.body, null, 2));
@@ -149,7 +179,8 @@ export default async function handler(req, res) {
       let options = Array.isArray(parsed.options) ? parsed.options : [];
       options = options
         .map((o) => (o && o.timetable ? o : { timetable: o || {}, recommendation: "" }))
-        .map((o) => ({ timetable: normalizeLunch(o.timetable || {}), recommendation: o.recommendation || "" }));
+        .map((o) => ({ timetable: normalizeLunch(o.timetable || {}), recommendation: o.recommendation || "" }))
+        .map((o) => ({ timetable: normalizeFixedClasses(o.timetable || {}), recommendation: o.recommendation }));
   
       while (options.length < 3 && options.length > 0) {
         options.push({ timetable: options[0].timetable, recommendation: options[0].recommendation });

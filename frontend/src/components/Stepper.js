@@ -20,6 +20,7 @@ export default function Stepper({ step }) {
 					const isActive = i === step;
 					const isCompleted = i < step;
 					const href = ROUTES[i];
+					const isLast = i === STEPS.length - 1;
 					return (
 						<li key={i} className="flex flex-col items-center relative flex-1">
 							{/* Connection line */}
@@ -36,7 +37,8 @@ export default function Stepper({ step }) {
 							{/* Clickable step button */}
 							<button
 								type="button"
-								onClick={() => href && router.push(href)}
+								onClick={!isLast ? () => href && router.push(href) : undefined}
+								disabled={isLast}
 								title={`Go to ${title}`}
 								className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 focus:outline-none focus:ring-2 ${
 									isActive
@@ -50,7 +52,7 @@ export default function Stepper({ step }) {
 										: isDark
 											? "border-slate-600/50 bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 cursor-pointer"
 											: "border-slate-400/60 bg-slate-200/80 text-slate-600 hover:bg-slate-300/60 cursor-pointer"
-								}`}
+								} ${isLast ? 'cursor-default' : ''}`}
 							>
 								{isCompleted ? (
 									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,8 +66,9 @@ export default function Stepper({ step }) {
 							{/* Step label (also clickable) */}
 							<button
 								type="button"
-								onClick={() => href && router.push(href)}
-								className="mt-3 text-center"
+								onClick={!isLast ? () => href && router.push(href) : undefined}
+								disabled={isLast}
+								className={`mt-3 text-center ${isLast ? 'cursor-default' : ''}`}
 							>
 								<span className={`text-xs sm:text-sm font-medium transition-colors ${
 									isActive

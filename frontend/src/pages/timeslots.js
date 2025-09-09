@@ -207,21 +207,61 @@ export default function TimeSlotsPage() {
                 <div>
                   <label className="text-xs block mb-1">Start Time</label>
                   <div className="flex gap-2">
-                    <select className="input" value={startHour} onChange={(e)=>setStartHour(e.target.value)} aria-label="Start hour">
+                    <select
+                      className={`px-3 py-2 rounded-md border w-full focus:outline-none focus:ring-2 transition-colors ${
+                        isDark
+                          ? "bg-slate-900/60 text-slate-200 border-slate-600/50 focus:ring-cyan-500/40"
+                          : "bg-white text-slate-900 border-slate-400/60 focus:ring-cyan-500/40"
+                      }`}
+                      value={startHour}
+                      onChange={(e)=>setStartHour(e.target.value)}
+                      aria-label="Start hour"
+                    >
                       {hours.map(h => <option key={h} value={h}>{h}</option>)}
                     </select>
-                    <select className="input" value={startMinute} onChange={(e)=>setStartMinute(e.target.value)} aria-label="Start minute">
+                    <select
+                      className={`px-3 py-2 rounded-md border w-full focus:outline-none focus:ring-2 transition-colors ${
+                        isDark
+                          ? "bg-slate-900/60 text-slate-200 border-slate-600/50 focus:ring-cyan-500/40"
+                          : "bg-white text-slate-900 border-slate-400/60 focus:ring-cyan-500/40"
+                      }`}
+                      value={startMinute}
+                      onChange={(e)=>setStartMinute(e.target.value)}
+                      aria-label="Start minute"
+                    >
                       {minutes.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                   </div>
                 </div>
                 <div>
                   <label className="text-xs block mb-1">Period Duration (minutes)</label>
-                  <input type="number" min="1" className="input" value={periodMinutes} onChange={(e)=>setPeriodMinutes(e.target.value)} placeholder="e.g., 60" />
+                  <input
+                    type="number"
+                    min="1"
+                    className={`px-3 py-2 rounded-md border w-full focus:outline-none focus:ring-2 transition-colors ${
+                      isDark
+                        ? "bg-slate-900/60 text-slate-200 border-slate-600/50 focus:ring-cyan-500/40"
+                        : "bg-white text-slate-900 border-slate-400/60 focus:ring-cyan-500/40"
+                    }`}
+                    value={periodMinutes}
+                    onChange={(e)=>setPeriodMinutes(e.target.value)}
+                    placeholder="e.g., 60"
+                  />
                 </div>
                 <div>
                   <label className="text-xs block mb-1">Number of Classes</label>
-                  <input type="number" min="1" className="input" value={numClasses} onChange={(e)=>setNumClasses(e.target.value)} placeholder="e.g., 7" />
+                  <input
+                    type="number"
+                    min="1"
+                    className={`px-3 py-2 rounded-md border w-full focus:outline-none focus:ring-2 transition-colors ${
+                      isDark
+                        ? "bg-slate-900/60 text-slate-200 border-slate-600/50 focus:ring-cyan-500/40"
+                        : "bg-white text-slate-900 border-slate-400/60 focus:ring-cyan-500/40"
+                    }`}
+                    value={numClasses}
+                    onChange={(e)=>setNumClasses(e.target.value)}
+                    placeholder="e.g., 7"
+                  />
                 </div>
               </div>
               <div className="mt-3">

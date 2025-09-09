@@ -35,6 +35,7 @@ export default function TimetablePage() {
   const [customizeMode, setCustomizeMode] = useState(false);
   const [originalTimetable, setOriginalTimetable] = useState(null);
   const [hasSelectedOption, setHasSelectedOption] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (timeSlots.length && subjects.length && classrooms.length) {
@@ -61,14 +62,32 @@ export default function TimetablePage() {
     if (!generating && Array.isArray(timetableOptions) && timetableOptions.length > 0) {
       const first = timetableOptions[0];
       try { console.log("[Timetable] selecting option 0 keys", first && first.timetable ? Object.keys(first.timetable) : []); } catch {}
-      if (first && first.timetable) {
-        setTimetable(first.timetable);
-        setConflicts([]);
-        setCustomizeMode(false);
-        setHasSelectedOption(true);
+      if (first && first.timetable && Object.keys(first.timetable).length > 0) {
+        // Add a small delay to ensure state is properly updated
+        setTimeout(() => {
+          setTimetable(first.timetable);
+          setConflicts([]);
+          setCustomizeMode(false);
+          setHasSelectedOption(true);
+          setRetryCount(0); // Reset retry count on successful generation
+        }, 100);
+      } else if (retryCount < 2) {
+        // Retry generation if we get empty timetables
+        console.log(`[Timetable] Empty timetable detected, retrying... (${retryCount + 1}/2)`);
+        setTimeout(() => {
+          setRetryCount(prev => prev + 1);
+          generateTimetables({
+            classrooms,
+            timeSlots,
+            labs,
+            subjects: subjects.map((s) => ({ name: s.name, weekly: s.weekly })),
+            facultyAvailability: facultyAssignments,
+            fixedClasses,
+          });
+        }, 1000);
       }
     }
-  }, [generating, timetableOptions]);
+  }, [generating, timetableOptions, retryCount]);
 
   const handleSave = () => {
     setCustomizeMode(false);
@@ -165,14 +184,14 @@ export default function TimetablePage() {
                   isDark ? "text-cyan-300" : "text-cyan-700"
                 }`}
               >
-                Generating optimized timetables...
+                {retryCount > 0 ? `Retrying generation... (${retryCount}/2)` : "Generating optimized timetables..."}
               </p>
               <p
                 className={`text-sm mt-2 ${
                   isDark ? "text-slate-400" : "text-slate-600"
                 }`}
               >
-                This may take a few moments
+                {retryCount > 0 ? "Ensuring quality timetables..." : "This may take a few moments"}
               </p>
             </div>
           )}
@@ -193,7 +212,7 @@ export default function TimetablePage() {
                         setCustomizeMode(false);
                         setHasSelectedOption(true)
                       }}
-                      className={`card p-4 sm:p-5 w-full text-left transition-all duration-300 rounded-lg group transform animate-in slide-in-from-bottom-4 duration-500 hover:shadow-2xl
+                      className={`card p-4 sm:p-5 w-full text-left transition-all duration-300 rounded-lg group transform animate-in slide-in-from-bottom-4 hover:shadow-2xl
                       ${
                         isSelected
                           ? "bg-gradient-to-r from-yellow-500 to-orange-500 border-yellow-400 text-white shadow-2xl shadow-yellow-500/30 scale-105"

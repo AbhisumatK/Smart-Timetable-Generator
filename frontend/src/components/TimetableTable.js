@@ -132,6 +132,20 @@ export default function TimetableTable({
                         Object.entries(cell).map(([room, info]) => {
                           const subject = info.subject || "--";
                           const faculty = info.faculty || "";
+                          if (room === "LUNCH") {
+                            return (
+                              <div key={room} className="mb-1 last:mb-0 text-center">
+                                <span
+                                  className={`font-bold ${
+                                    isDark ? "text-white" : "text-slate-800 group-hover:!text-black"
+                                  }`}
+                                  title={subject}
+                                >
+                                  {subject}
+                                </span>
+                              </div>
+                            );
+                          }
                           return (
                             <div key={room} className="mb-1 last:mb-0">
                               <strong

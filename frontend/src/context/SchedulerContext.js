@@ -83,7 +83,6 @@ export function SchedulerProvider({ children, currentUser: providedUser }) {
   async function generateTimetables(inputData) {
     // Skip if already generating
     if (generating) return;
-    setGenerating(true);
     setGenerationError(null);
     try {
       const payload = {
@@ -96,6 +95,30 @@ export function SchedulerProvider({ children, currentUser: providedUser }) {
         lunchSlot,
         ...(inputData || {})
       };
+
+      // Validate compulsory fields before starting
+      const missing = [];
+      if (!Array.isArray(payload.timeSlots) || payload.timeSlots.length === 0) missing.push("time slots");
+      if (!Array.isArray(payload.classrooms) || payload.classrooms.length === 0) missing.push("classrooms");
+      if (!Array.isArray(payload.subjects) || payload.subjects.length === 0) missing.push("subjects");
+      // Validate subject structure minimally
+      if (Array.isArray(payload.subjects) && payload.subjects.length > 0) {
+        const invalidSubjects = payload.subjects.filter((s) => !s || !s.name || s.weekly === undefined || s.weekly === null);
+        if (invalidSubjects.length > 0) missing.push("subject details (name/weekly)");
+      }
+      // Lunch sanity (informative only)
+      if (payload.lunchSlot && Array.isArray(payload.timeSlots) && !payload.timeSlots.includes(payload.lunchSlot)) {
+        // Auto-fix by clearing invalid lunchSlot and warn
+        try { console.warn("[generateTimetables] lunchSlot not in timeSlots; ignoring"); } catch {}
+        payload.lunchSlot = null;
+      }
+
+      if (missing.length) {
+        setGenerationError(`Missing required data: ${missing.join(", ")}. Please complete these before generating.`);
+        return;
+      }
+
+      setGenerating(true);
       try {
         console.log("[generateTimetables] payload", {
           classrooms: Array.isArray(classrooms) ? classrooms.length : 0,
@@ -148,21 +171,35 @@ export function SchedulerProvider({ children, currentUser: providedUser }) {
       if (!Array.isArray(options)) options = [];
       options = options
         .map((o) => (o && o.timetable ? o : { timetable: o || {}, recommendation: "" }))
-        .filter((o) => o && typeof o === "object");
+        .filter((o) => o && typeof o === "object" && o.timetable && Object.keys(o.timetable).length > 0);
 
       try {
         console.log("[generateTimetables] parsed options", options.length, options[0] && Object.keys(options[0].timetable || {}));
       } catch {}
 
-      // No local fallback. If fewer than 3 options, duplicate to reach 3 so the UI renders consistently
+      // Validate that we have meaningful timetables
+      const validOptions = options.filter(opt => {
+        if (!opt.timetable || typeof opt.timetable !== 'object') return false;
+        const days = Object.keys(opt.timetable);
+        if (days.length === 0) return false;
+        // Check if any day has actual content
+        return days.some(day => {
+          const dayData = opt.timetable[day];
+          return dayData && typeof dayData === 'object' && Object.keys(dayData).length > 0;
+        });
+      });
 
-      // If still fewer than 3, duplicate with labels to satisfy UI expectation
-      while (options.length < 3 && options.length > 0) {
-        const base = options[0];
-        options.push({ timetable: base.timetable, recommendation: base.recommendation || "Alternative arrangement" });
+      if (validOptions.length === 0) {
+        throw new Error("No valid timetables generated. Please check your input data and try again.");
       }
 
-      setTimetableOptions(options);
+      // If fewer than 3 valid options, duplicate to reach 3 so the UI renders consistently
+      while (validOptions.length < 3 && validOptions.length > 0) {
+        const base = validOptions[0];
+        validOptions.push({ timetable: base.timetable, recommendation: base.recommendation || "Alternative arrangement" });
+      }
+
+      setTimetableOptions(validOptions);
     } catch (error) {
       setGenerationError(error.message);
       // On failure, ensure no timetables are loaded/displayed
