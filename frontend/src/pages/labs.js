@@ -45,7 +45,7 @@ export default function LabsPage() {
       <div className="page-container">
         <div className="content-wrapper">
           <div className="text-center mb-8">
-            <h2 className="section-header">Add Lab Class</h2>
+            <h2 className="section-header">Lab Classes</h2>
             <p className="section-subtitle">Provide a lab name, number of consecutive classes, optional preferred start time (from your slots), and the lab classroom.</p>
           </div>
 

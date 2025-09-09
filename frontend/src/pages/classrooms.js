@@ -33,6 +33,10 @@ export default function ClassroomsPage() {
       </div>
       <div className="page-container">
         <div className="content-wrapper">
+        <div className="text-center mb-8">
+            <h2 className="section-header">Classrooms</h2>
+            <p className="section-subtitle">Provide class room-numbers for your subjects.</p>
+          </div>
           <div className="card max-w-3xl mx-auto p-8">
           <InputList
             label="Enter Classroom Names"

@@ -56,16 +56,21 @@ export default function Navbar() {
           : "border-cyan-500/30 bg-gradient-to-r from-white/95 via-slate-50/95 to-white/95 shadow-cyan-500/20"
       }`}
     >
-      <div className="container flex h-16 items-center justify-between px-4">
+      <div className="container flex h-16 items-center justify-between pl-4 pr-6 md:pr-8">
         <div className="flex items-center gap-2 sm:gap-6">
           <span
-            className={`font-bold text-sm sm:text-lg md:text-xl tracking-tight bg-gradient-to-r bg-clip-text text-transparent cursor-pointer truncate transition-all duration-300 hover:scale-105 ${
+            className={`flex justify-center items-center gap-2 font-bold text-sm sm:text-lg md:text-xl tracking-tight bg-gradient-to-r bg-clip-text text-transparent cursor-pointer truncate transition-all duration-300 hover:scale-105 ${
               isDark
                 ? "from-cyan-400 via-blue-400 to-purple-400 hover:from-cyan-300 hover:via-blue-300 hover:to-purple-300"
                 : "from-cyan-700 via-blue-700 to-purple-700 hover:from-cyan-600 hover:via-blue-600 hover:to-purple-600"
             }`}
             onClick={() => router.push("/")}
           >
+            <img
+              src="/logo.png"
+              alt="Smart Timetable Scheduler logo"
+              className="h-10 w-10 sm:h-12 sm:w-12 cursor-pointer select-none"
+            />
             <span className="hidden sm:inline">Smart Timetable Scheduler</span>
             <span className="sm:hidden">STS</span>
           </span>
